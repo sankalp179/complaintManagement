@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {{>head}}
+</head>
+<body>
+    
+    {{>navbar}}
+
+    <!-- complaints -->
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col-12 col-md-8 mx-auto">
+                <div class="row">
+                    <div class="col-12 d-flex justify-content-between text-secondary mb-3">
+                        <small>Posted On: <span id="c_posted_on"></span></small>
+                        <small>Status: <span id="c_status"></span></small>
+                    </div>
+                    
+                    <div class="col-12">
+                        <h5 class=" text-muted">Location</h5>
+                        <p><span id="c_location"></span></p>
+                    </div>
+                    <div class="col-12">
+                        <h5 class=" text-muted">Type of Complaint</h5>
+                        <p><span id="c_type"></span></p>
+                    </div>
+                    <div class="col-12">
+                        <h5 class=" text-muted">Relevant Para/Clause</h5>
+                        <p><span id="c_para"></span></p>
+                    </div>
+                    <div class="col-12">
+                        <h5 class=" text-muted">Whether Objection/Suggestion</h5>
+                        <p><span id="c_objectionOrSuggestion"></span></p>
+                    </div>
+                    <div class="col-12">
+                        <h5 class=" text-muted">Complaint Description</h5>
+                        <p><span id="c_desc"></span> </p>
+                    <hr/>
+                    </div>
+                    <div class="col-4 col-offset-8 d-none" id="action_div">
+                        <label>Mark as</label>
+                        <select id="action" class="form-control">
+                        </select>
+                        <button onclick="changeStatus()" class="btn btn-primary btn-sm">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- complaints end -->
+
+    {{>js_scripts}}
+</body>
+</html>
