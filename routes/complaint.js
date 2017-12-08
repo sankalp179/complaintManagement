@@ -6,7 +6,7 @@ const mongoose = require('./../server/db/mongoose'); //config
 const Complaint = require('./../server/models/complaint');
 
 exports.registerNewComplaint = (req, res) => {
-    var complaintBody = _.pick(req.body, ['complaintType', 'location', 'relevantParaClause', 'objectionOrSuggestion', 'complaintDesc']);
+    var complaintBody = _.pick(req.body, ['complaintType', 'location', 'relevantParaClause', 'objectionOrSuggestion', 'complaintDesc', 'paraClauseLink']);
     if (typeof (complaintBody.complaintType) == "undefined") {
         return res.status(400).json({
             status: 0,
@@ -14,7 +14,7 @@ exports.registerNewComplaint = (req, res) => {
         });
     }
     else {
-        if (!validator.trim(complaintBody.complaintType)) {
+        if (["Land Use Proposals", "Zoning Acquisition", "Infrastructure Provisions", "Demographic & Population Projections", "Environment Related", "MCA/Control Area/Village Boundary", "Traffic & Transportation", "Others"].indexOf(validator.trim(complaintBody.complaintType)) == -1) {
             return res.status(400).json({
                 status: 0,
                 msg: 'Complaint Type required'
@@ -52,6 +52,14 @@ exports.registerNewComplaint = (req, res) => {
         }
     }
 
+    if (typeof (complaintBody.paraClauseLink) == "undefined") {
+        return res.status(400).json({
+            status: 0,
+            msg: 'Please enter Link of relevant Para/Clause'
+        });
+    }
+
+
     if (typeof (complaintBody.complaintDesc) == "undefined") {
         return res.status(400).json({
             status: 0,
@@ -74,7 +82,7 @@ exports.registerNewComplaint = (req, res) => {
         });
     }
     else {
-        if (['Complaint', 'Suggestion'].indexOf(validator.trim(complaintBody.objectionOrSuggestion)) === -1) {
+        if (['Objection', 'Suggestion'].indexOf(validator.trim(complaintBody.objectionOrSuggestion)) === -1) {
             return res.status(400).json({
                 status: 0,
                 msg: 'Select whether its a complaint or suggestion.'
@@ -86,6 +94,7 @@ exports.registerNewComplaint = (req, res) => {
         complaintType: complaintBody.complaintType,
         location: complaintBody.location,
         relevantParaClause: complaintBody.relevantParaClause,
+        paraClauseLink: complaintBody.paraClauseLink,
         objectionOrSuggestion: complaintBody.objectionOrSuggestion,
         complaintDesc: complaintBody.complaintDesc,
         complainant: req.user._id,
@@ -214,10 +223,10 @@ exports.updateStatus = (req, res) => {
                     });
                 }
                 else if (savedComplaint.status == "Under Consideration" && newStatus != "Replied") {
-                        return res.status(400).send({
-                            status: 0,
-                            msg: 'Only allowed action is marking it as Replied.'
-                        });
+                    return res.status(400).send({
+                        status: 0,
+                        msg: 'Only allowed action is marking it as Replied.'
+                    });
                 }
                 else {
                     // Continue to update status/ official / actionTrail

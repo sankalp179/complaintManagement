@@ -1,0 +1,1 @@
+module.exports.organization_name = 'Organization';

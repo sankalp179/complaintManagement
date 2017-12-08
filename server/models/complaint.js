@@ -9,20 +9,28 @@ var complaintSchema = new mongoose.Schema({
     },
     complaintType: {
         type: String,
+        enum: ["Land Use Proposals", "Zoning Acquisition", "Infrastructure Provisions", "Demographic & Population Projections", "Environment Related", "MCA/Control Area/Village Boundary", "Traffic & Transportation", "Others"],
         required: true
     },
     location: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     relevantParaClause: {
         type: String,
-        required: true
+        required: true,
+        trim: true
+    },
+    paraClauseLink: {
+        type: String,
+        required: false,
+        trim: true
     },
     objectionOrSuggestion: {
         type: String,
-        enum: ['Complaint', 'Suggestion'],
-        default: 'Complaint'
+        enum: ['Objection', 'Suggestion'],
+        default: 'Objection'
     },
     complaintDesc: {
         type: String,
@@ -34,9 +42,9 @@ var complaintSchema = new mongoose.Schema({
         ref: 'users',
         required: true
     },
-    postedOn :{
-        type : Date,
-        default : Date.now()
+    postedOn: {
+        type: Date,
+        default: Date.now()
     },
     official: {
         type: mongoose.Schema.Types.ObjectId,
@@ -44,8 +52,8 @@ var complaintSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['Posted', 'Under Consideration', 'Replied'],
-        default: 'Posted'
+        enum: ['Registered', 'Under Consideration', 'Replied'],
+        default: 'Registered'
     },
     actionTrail: [{
         user: {
@@ -67,7 +75,7 @@ var complaintSchema = new mongoose.Schema({
 complaintSchema.pre('save', function (next) {
     var complaint = this;
     counter.findOneAndUpdate(
-        {for :'complaintNumber'},
+        { for: 'complaintNumber' },
         {
             $inc: { seq: 1 }
         }, (err, counter) => {
@@ -75,15 +83,15 @@ complaintSchema.pre('save', function (next) {
                 res.status(500);
             }
             else {
-                if(counter){
+                if (counter) {
                     complaint.complaintNumber = counter.seq;
                     next();
                 }
-                else{
+                else {
                     // return Promise.reject('Ref No could not be generated')
                     // return res.status(400).json({
-                        // status : 0,
-                        console.log('Ref No could not be generated');
+                    // status : 0,
+                    console.log('Ref No could not be generated');
                     // });
                     res.status(500)
                 }

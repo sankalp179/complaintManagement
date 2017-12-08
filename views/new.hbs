@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {{>head}}
     <!-- froala-editor -->
@@ -14,52 +15,74 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/plugins/file.min.css" />
 
 </head>
+
 <body>
 
     {{>navbar}}
-    
+
     <!-- editor -->
-    <div class="container mb-5">
+    <div class="container my-5">
         <div class="row">
             <div class="col-12 col-lg-8 mx-auto">
                 <div class="row">
                     <div class="col-12">
-                        <p class="h4 mb-4">New Complaint</p>
+                        <p class="h4 mb-4">Register New Suggestion or Objection</p>
                     </div>
                     <div class="col-12">
-                        <form>
-                            <div class="form-group">
-                                    <label for="location">Location</label>
-                                <input type="email" class="form-control" id="location" placeholder="Your location...">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="objectionSuggestion">Whether Objection/Suggestion</label>
+                                    <select class="form-control" id="objectionSuggestion">
+                                        <option value="Objection">Objection</option>
+                                        <option value="Suggestion">Suggestion</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="complaintType">Type of Complaint</label>
-                                <select class="form-control" id="complaintType">
-                                    <option value="0">Zero</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                </select>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="complaintType">Type :</label>
+                                    <select class="form-control" id="complaintType">
+                                        <option value="Land Use Proposals">Land Use Proposals</option>
+                                        <option value="Zoning Acquisition">Zoning Acquisition</option>
+                                        <option value="Infrastructure Provisions">Infrastructure Provisions</option>
+                                        <option value="Demographic & Population Projections">Demographic &amp; Population Projections</option>
+                                        <option value="Environment Related">Environment Related</option>
+                                        <option value="MCA/Control Area/Village Boundary">MCA/Control Area/Village Boundary</option>
+                                        <option value="Traffic & Transportation">Traffic &amp; Transportation (incl. alignment of Roads)</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="paraClause">Relevant Para/Clause</label>
-                                <input type="email" class="form-control" id="paraClause" placeholder="">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" class="form-control" id="location" placeholder="Enter location...">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="paraClause">Relevant Para/Clause</label>
+                                    <input type="text" class="form-control" id="paraClause" placeholder="">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="objectionSuggestion">Whether Objection/Suggestion</label>
-                                <select class="form-control" id="objectionSuggestion">
-                                    <option value="obj">Objection</option>
-                                    <option value="sugg">Suggestion</option>
-                                </select>
+                            <div class="col-lg-6">
+                                <div class="form-group">
+                                    <label for="paraClauseLink">(Optional) Link to Relevant Para/Clause</label>
+                                    <input type="text" class="form-control" id="paraClauseLink" placeholder="">
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label for="editor">Complaint Description</label>
-                                <textarea name="" id="editor" cols="30" rows="10"></textarea>
-                            </div>
-                            <div class="form-group text-center">
-                                <button class="btn btn-primary btn-rounded px-4">Submit</button>
-                            </div>
-                        </form>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editor">Complaint Description</label>
+                            <textarea id="editor" cols="30" rows="10"></textarea>
+                        </div>
+                        <div class="form-group text-center">
+                            <button onclick="registerComplaint()" class="btn btn-primary btn-rounded px-4">Submit</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -68,10 +91,11 @@
     <!-- editor end -->
 
     {{>js_scripts}}
-<!-- froala-editor -->
-<script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/froala_editor.min.js'></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/image.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/video.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/file.min.js"></script>
+    <!-- froala-editor -->
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/froala_editor.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/file.min.js"></script>
 </body>
+
 </html>

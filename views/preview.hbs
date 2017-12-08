@@ -1,55 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     {{>head}}
 </head>
+
 <body>
-    
+
     {{>navbar}}
 
     <!-- complaints -->
-    <div class="container mb-5">
+    <div class="container mb-5 ">
         <div class="row">
             <div class="col-12 col-md-8 mx-auto">
-                <div class="row">
-                    <div class="col-12 d-flex justify-content-between text-secondary mb-3">
-                        <small>Posted On: <span id="c_posted_on"></span></small>
-                        <small>Status: <span id="c_status"></span></small>
-                    </div>
-                    
-                    <div class="col-12">
-                        <h5 class=" text-muted">Location</h5>
-                        <p><span id="c_location"></span></p>
-                    </div>
-                    <div class="col-12">
-                        <h5 class=" text-muted">Type of Complaint</h5>
-                        <p><span id="c_type"></span></p>
-                    </div>
-                    <div class="col-12">
-                        <h5 class=" text-muted">Relevant Para/Clause</h5>
-                        <p><span id="c_para"></span></p>
-                    </div>
-                    <div class="col-12">
-                        <h5 class=" text-muted">Whether Objection/Suggestion</h5>
-                        <p><span id="c_objectionOrSuggestion"></span></p>
-                    </div>
-                    <div class="col-12">
-                        <h5 class=" text-muted">Complaint Description</h5>
-                        <p><span id="c_desc"></span> </p>
-                    <hr/>
-                    </div>
-                    <div class="col-4 col-offset-8 d-none" id="action_div">
-                        <label>Mark as</label>
-                        <select id="action" class="form-control">
-                        </select>
-                        <button onclick="changeStatus()" class="btn btn-primary btn-sm">Save</button>
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <div class="row border border-top-0 border-left-0 border-right-0">
+                            <div class="col-lg-6">
+                                <p id="c_head" class="text-capitalize lead">Suggestion (# 232)</p>
+                            </div>
+                            <div class="col-lg-6 text-right">
+                                <p class="font-weight-bold">Registered :
+                                    <span id="c_posted_on" class="font-weight-normal"></span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="status_steps_div" class="container my-5 d-none">
+
+                            <div class="row bs-wizard" style="border-bottom:0;">
+
+                                <div class="col-xs-3 bs-wizard-step complete">
+                                    <div class="text-center bs-wizard-stepnum">Registered</div>
+                                    <div class="progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                    <a href="javascript:()" class="bs-wizard-dot"></a>
+                                </div>
+
+                                <div class="col-xs-3 bs-wizard-step ">
+                                    <div class="text-center bs-wizard-stepnum">Under Consideration</div>
+                                    <div class="progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                    <a href="javascript:()" class="bs-wizard-dot"></a>
+                                </div>
+
+                                <div class="col-xs-3 bs-wizard-step ">
+                                    <div class="text-center bs-wizard-stepnum">Replied</div>
+                                    <div class="progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                    <a href="javascript:()" class="bs-wizard-dot"></a>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div id="action_div" class="row d-none">
+                            <div class="col-lg-8 offset-lg-2 mt-3 mb-5">
+                                <form class="form-inline">
+                                    <div class="form-group mx-sm-3">
+                                        <label class="control-label" for="c_new_status">Mark as :&nbsp;&nbsp;</label>
+                                        <select class="form-control" id="c_new_status">
+                                            <option selected disabled>Select Action</option>
+                                            <option value="Under Consideration">Under Consideration</option>
+                                            <option value="Replied">Replied</option>
+                                        </select>
+                                    </div>
+                                    <button onclick="javascript:changeStatus()" class="btn btn-success text-light btn-rounded px-4">Save</button>
+                                </form>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Complainant :
+                                    <span id="c_complainant" class="font-weight-normal"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row d-none">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Official :
+                                    <span id="c_official" class="font-weight-normal"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Type :
+                                    <span id="c_type" class="font-weight-normal"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Location :
+                                    <span class="font-weight-normal" id="c_location"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Relevant Para/Clause :
+                                    <span class="font-weight-normal" id="c_para"></span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="font-weight-bold">Description :
+                                    <br/>
+                                    <span class="font-weight-normal" id="c_desc"></span>
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <a href="../home" class="btn btn-primary col-lg-2 mt-3 offset-lg-5 btn-rounded px-4">Go Back</a>
+
             </div>
         </div>
+    </div>
     </div>
     <!-- complaints end -->
 
     {{>js_scripts}}
 </body>
+
 </html>
