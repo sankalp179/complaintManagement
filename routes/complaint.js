@@ -280,3 +280,29 @@ exports.updateStatus = (req, res) => {
         })
     }
 }
+
+exports.getStats = (req, res) => {
+    $query = Complaint.aggregate([
+        {
+            $group: {
+                _id: {
+                    objectionOrSuggestion: '$objectionOrSuggestion',
+                    complaintType: '$complaintType'
+                },
+                count: {
+                    $sum: 1
+                }
+            }
+        },
+        {
+            $sort: {
+                "_id.objectionOrSuggestion": 1,
+                "_id.complaintType": 1
+            }
+        }
+    ]).exec().then((result) => {
+        res.send(result);
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+}

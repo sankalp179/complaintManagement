@@ -33,6 +33,7 @@ app.get('/account', AuthenticationWantedFrontend, frontend.account);
 app.get('/home', AuthenticationWantedFrontend, frontend.home);
 app.get('/new', AuthenticationWantedFrontend, frontend.new);
 app.get('/view/:complaintNumber', AuthenticationWantedFrontend, frontend.view);
+app.get('/statistics', AuthenticationWantedFrontend, frontend.stats);
 
 
 app.post('/api/user/register', userController.registerUser);
@@ -40,6 +41,7 @@ app.get('/api/user/me', checkAuthentication, userController.fetchLoggedUserDetai
 app.post('/api/user/login', userController.doLogin);
 app.get('/api/user/logout', checkAuthentication, userController.logout);
 
+app.get('/api/complaints/stats', checkAuthentication, checkPrivAdmin, complaintsController.getStats);
 app.post('/api/complaints/new', checkAuthentication, checkPrivUser, complaintsController.registerNewComplaint);
 app.get('/api/complaints/all', checkAuthentication, complaintsController.listAllComplaints);
 app.get('/api/complaints/:complaintNumber', checkAuthentication, complaintsController.getComplaint);

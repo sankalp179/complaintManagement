@@ -78,6 +78,19 @@
                 purple: 'rgb(153, 102, 255)',
                 grey: 'rgb(201, 203, 207)'
             };
+
+        $.ajax({
+            type : 'GET',
+            url : './api/complaints/stats',
+            success : (data)=>{
+                console.log(data);
+            },
+            error : (err)=>{
+
+            }
+        });
+
+
         var stat_1_ctx = document.getElementById("stat_1").getContext('2d');
         var stat_1 = new Chart(stat_1_ctx, {
             type: 'bar',
