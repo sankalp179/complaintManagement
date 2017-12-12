@@ -70,6 +70,8 @@ $(function () {
 
             case 'view': load_complaint();
                 break;
+
+            case 'stats': initStats(); break;
         }
     }
     else {
@@ -86,10 +88,13 @@ function load_all_complaints() {
             if (data.status) {
                 var m = data.data;
                 if (isad) {
-                    chead = '<tr><th scope="col">#</th><th>Objection/ Suggestion</th><th>Type</th><th scope="col">Complainant</th><th scope="col">DateTime</th><th scope="col">DateTime</th><th scope="col">Status</th><th>View</th></tr>';
+                    chead = '<tr><th scope="col">ID</th><th>Objection/ Suggestion</th><th>Type</th><th scope="col">Complainant</th><th scope="col">DateTime</th><th scope="col">DateTime</th><th scope="col">Status</th><th>View</th></tr>';
+                    cfoot = '<tr><th scope="col">Complaint ID</th><th>Objection/ Suggestion</th><th>Type</th><th scope="col">Complainant</th><th scope="col">DateTime</th><th scope="col">DateTime</th><th scope="col">Status</th><th>View</th></tr>';
+                    $('#cfoot').html(cfoot);
                 }
                 else {
                     chead = '<tr><th scope="col">#</th><th>Type</th><th scope="col">DateTime</th><th>DateTime-2</th><th scope="col">Status</th><th scope="col">View</th></tr>';
+                    cfoot = '';
                 }
                 $('#chead').html(chead);
                 cbody = '';
@@ -140,9 +145,10 @@ function load_all_complaints() {
                         }
                         ]
                     });
+                    $('#ctable').removeClass('d-none');
                 }
                 else {
-                    $('#ctable').DataTable({
+                    var ctable = $('#ctable').DataTable({
                         language: {
                             "emptyTable": "No suggestions or objections to show",
                             "infoEmpty": "No suggestions or objections to show",
@@ -151,17 +157,48 @@ function load_all_complaints() {
                         columnDefs: [{
                             orderable: false,
                             targets: 7
-                        },
-                        {
+                        }, {
                             orderData: [5],
                             targets: 4
-                        },
-                        {
+                        }, {
                             visible: false,
                             targets: 5
+                        }],
+                        initComplete: function () {
+                            this.api().columns().every(function () {
+                                var column = this;
+                                var select = $('<select><option value="">Showing All</option></select>')
+                                    .appendTo($(column.footer()).empty())
+                                    .on('change', function () {
+                                        var val = $.fn.dataTable.util.escapeRegex(
+                                            $(this).val()
+                                        );
+
+                                        column
+                                            .search(val ? '^' + val + '$' : '', true, false)
+                                            .draw();
+                                    });
+
+                                column.data().unique().sort().each(function (d, j) {
+                                    select.append('<option value="' + d + '">' + d + '</option>')
+                                });
+                            });
                         }
-                        ]
                     });
+                    $('#cfoot>tr>th:nth-child(1),#cfoot>tr>th:nth-child(4),#cfoot>tr>th:nth-child(5),#cfoot>tr>th:nth-child(7)').html('')
+                    $('#ctable').removeClass('d-none');
+                    // Apply the search
+                    // ctable.columns().every(function () {
+                    //     var that = this;
+
+                    //     $('input', this.footer()).on('keyup change', function () {
+                    //         if (that.search() !== this.value) {
+                    //             that
+                    //                 .search(this.value)
+                    //                 .draw();
+                    //         }
+                    //     });
+                    // });
                 }
 
             }
@@ -357,21 +394,147 @@ var registerComplaint = () => {
 };
 
 var populate_links = () => {
-    if(pname == "login" || pname=="signup"){
+    if (pname == "login" || pname == "signup") {
         $('ul.navbar-nav.flex-row').removeClass('d-md-flex').addClass('d-none');
     }
-    else{
+    else {
         $('a.navbar-brand').attr('href', baseUrl + 'home');
         $('a.dropdown-item[href="javascript:goToProfile()"]').addClass('d-none');
         // $('a[href="javascript:goToProfile()"]').attr('href', baseUrl + 'profile');
-        // $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
+        $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
         if (isad) {
-            // $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
+            $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
         }
         else {
-            $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
-            
+            // $('.navbar-nav-scroll .nav-item:nth-2child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
+
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('New Suggestion/Objection').attr('href', baseUrl + 'new').removeClass('d-none');
         }
     }
+}
+
+var initStats = () => {
+    window.chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+
+    $.ajax({
+        type: 'GET',
+        url: './api/complaints/stats',
+        success: (data) => {
+            console.log(data);
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                alert(e.responseJSON.msg);
+            else
+                alert('An error occured while communicating with server.\n\nTry refreshing the page.');
+        }
+    });
+
+
+    var stat_1_ctx = document.getElementById("stat_1").getContext('2d');
+    var stat_1 = new Chart(stat_1_ctx, {
+        type: 'bar',
+        data: {
+            labels: ["Land Use Proposals", "Zoning Acquisition", "Infrastructure Provisions", "Demographic & Population Projections", "Environment Related", "MCA/Control Area/Village Boundary", "Traffic & Transportation", "Others"],
+            datasets: [{
+                label: 'Suggestions',
+                backgroundColor: window.chartColors.red,
+                yAxisID: "y-axis-1",
+                data: [30, 41, 14, 26, 6, 60, 96, 32]
+            }, {
+                label: 'Objections',
+                backgroundColor: window.chartColors.yellow,
+                yAxisID: "y-axis-1",
+                data: [33, 25, 75, 40, 49, 86, 79, 68]
+            }]
+
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: "Objections & Suggestions - Type Wise"
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: true
+            },
+            scales: {
+                yAxes: [{
+                    type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                    display: true,
+                    position: "left",
+                    id: "y-axis-1",
+                }],
+            },
+            hover: {
+                animationDuration: 0
+            },
+            animation: {
+                duration: 1,
+                onComplete: function () {
+                    var chartInstance = this.chart,
+                        ctx = chartInstance.ctx;
+                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+
+                    this.data.datasets.forEach(function (dataset, i) {
+                        var meta = chartInstance.controller.getDatasetMeta(i);
+                        meta.data.forEach(function (bar, index) {
+                            var data = dataset.data[index];
+                            ctx.fillText(data, bar._model.x, bar._model.y - 5);
+                        });
+                    });
+                }
+            }
+        }
+    });
+
+    var stat_2_ctx = document.getElementById("stat_2").getContext('2d');
+    var stat_2 = new Chart(stat_2_ctx, {
+        type: 'doughnut',
+        data: {
+            "labels": ["Registered", "Under Consideration", "Replied"],
+            "datasets": [{
+                "label": "Status",
+                "data": [65, 59, 80],
+                "fill": true,
+                "backgroundColor": [window.chartColors.red,
+                window.chartColors.orange,
+                window.chartColors.green],
+                "borderColor": [window.chartColors.red,
+                window.chartColors.orange,
+                window.chartColors.green],
+                "borderWidth": 1
+            }]
+        },
+        "options": {
+            responsive: true,
+            maintainAspectRatio: true,
+            // legend: {
+            // position: 'right',
+            // },   
+            title: {
+                display: true,
+                text: "Status"
+            },
+            "layout": {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            }
+        }
+    });
 }
