@@ -241,8 +241,8 @@ function load_complaint() {
         url: baseUrl + 'api/complaints/' + cno,
         type: 'GET',
         success: (data) => {
-            var { complainant, complaintDesc, complaintType, location, objectionOrSuggestion, postedOn, relevantParaClause, status } = data;
-
+            var { complainant, complaintDesc, complaintType, location, objectionOrSuggestion, postedOn, relevantParaClause, status, actionTrail
+ } = data;
             $('#c_status').text(status);
             $('#c_desc').html(complaintDesc);
             $('#c_type').text(complaintType);
@@ -278,6 +278,43 @@ function load_complaint() {
                     break;
             }
             $("#status_steps_div").removeClass('d-none');
+
+            // SHowing Trail Div
+            $('#c_trail_head').text(`${objectionOrSuggestion} Trail`);
+            if (actionTrail && actionTrail.length > 0) {
+                var itemMarkup='';
+                for (var i = 0; i < actionTrail.length; i++) {
+                    var item = actionTrail[i];
+                    if (isad) {
+                        itemMarkup += `
+                                        <div class="trail-item my-2 ${item.user.userType=="admin"?'right':''}">
+                                            <div class="trail-info clearfix">
+                                                <span class="trail-name float-left">${item.user.name}</span>
+                                                <span class="trail-timestamp float-right">${moment(item.datetime).format('Do MMM YY, h:mm a')}</span>
+                                            </div>
+                                            <div class="trail-text">
+                                               ${item.action}
+                                               ${(item.remarks && item.remarks.trim()) ? '<br>' + item.remarks.trim() : ''}
+                                            </div>
+                                        </div>`;
+                    }
+                    else {
+                        itemMarkup += `
+                                        <div class="trail-item my-2 ${item.user.userType == "admin" ? 'right' : ''}">
+                                            <div class="trail-info clearfix">
+                                                <span class="trail-timestamp float-left">${moment(item.datetime).format('Do MMM YY, h:mm a')}</span>
+                                            </div>
+                                            <div class="trail-text">
+                                               ${item.action}
+                                               ${(item.remarks && item.remarks.trim()) ? '<br>' + item.remarks.trim() : ''}
+                                            </div>
+                                        </div>`;
+                    }
+                }
+                $('#trail_list').html(itemMarkup);
+                $('#trail_card').removeClass('d-none');
+            }
+
         },
         error: (e) => {
             if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
@@ -288,7 +325,14 @@ function load_complaint() {
     })
 }
 
-function changeStatus() {
+var onStatusChange = () => {
+    if ($('#c_new_status').val() != "Replied")
+        $('#c_remarks_div').addClass('d-none');
+    else
+        $('#c_remarks_div').removeClass('d-none');
+}
+
+var changeStatus = () => {
     let newStatus = $('#c_new_status').val();
     if (!newStatus) {
         alert('Please select an option')

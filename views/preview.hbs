@@ -12,12 +12,12 @@
     <!-- complaints -->
     <div class="container mb-5 ">
         <div class="row">
-            <div class="col-12 col-md-8 mx-auto">
+            <div class="col-lg-8 mx-auto">
                 <div class="card mt-5">
                     <div class="card-body">
                         <div class="row border border-top-0 border-left-0 border-right-0">
                             <div class="col-lg-6">
-                                <p id="c_head" class="text-capitalize lead">Suggestion (# 232)</p>
+                                <p id="c_head" class="text-capitalize lead"></p>
                             </div>
                             <div class="col-lg-6 text-right">
                                 <p class="font-weight-bold">Registered :
@@ -58,14 +58,18 @@
                         </div>
                         <div id="action_div" class="row d-none">
                             <div class="col-lg-8 offset-lg-2 mt-3 mb-5">
-                                <form class="form-inline">
+                                <form class="text-center">
                                     <div class="form-group mx-sm-3">
                                         <label class="control-label" for="c_new_status">Mark as :&nbsp;&nbsp;</label>
-                                        <select class="form-control" id="c_new_status">
+                                        <select class="form-control" onchange="onStatusChange()" id="c_new_status">
                                             <option selected disabled>Select Action</option>
                                             <option value="Under Consideration">Under Consideration</option>
                                             <option value="Replied">Replied</option>
                                         </select>
+                                    </div>
+                                    <div id="c_remarks_div" class="d-none form-group mx-sm-3">
+                                        <label class="control-label" for="c_remarks">Comments :&nbsp;&nbsp;</label>
+                                        <textarea id="c_remarks" class="form-control"></textarea>
                                     </div>
                                     <button onclick="javascript:changeStatus()" class="btn btn-success text-light btn-rounded px-4">Save</button>
                                 </form>
@@ -118,8 +122,20 @@
                     </div>
                 </div>
 
-                <a href="../home" class="btn btn-primary col-lg-2 mt-3 offset-lg-5 btn-rounded px-4">Go Back</a>
+                <a href="../home" class="btn btn-primary col-lg-3 mt-3 offset-lg-5 btn-rounded px-4">Go Back</a>
 
+            </div>
+            <div class="col-lg-4 mx-auto d-none" id="trail_card">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <div class="row border border-top-0 border-left-0 border-right-0">
+                                <p id="c_trail_head" class="col-lg-12 text-capitalize lead">Trail</p>
+                        </div>
+                        <div class="trail" id="trail_list">
+                            
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

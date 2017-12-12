@@ -156,10 +156,20 @@ exports.getComplaint = (req, res) => {
     if (validator.isNumeric(complaintNumber)) {
 
         if (req.user.userType == "user") {
+            
             var query = Complaint.findOne({
                 complaintNumber,
                 complainant: req.user._id
-            }, '-actionTrail -official -_id -__v').populate('complainant', 'name-_id').exec();
+            }, ' -official -_id -__v')
+            // .populate('complainant', 'name-_id')
+            // .exec();
+            .populate([{
+                path: 'complainant',
+                select: 'name-_id'
+            }, {
+                path: 'actionTrail.user',
+                select: 'userType-_id'
+            }]).exec();
         }
         else {
             var query = Complaint.findOne({
@@ -198,6 +208,83 @@ exports.updateStatus = (req, res) => {
 
         if (typeof (req.body.newStatus) !== "undefined" && ['Under Consideration', 'Replied'].indexOf(validator.trim(req.body.newStatus)) != -1) {
             var newStatus = validator.trim(req.body.newStatus);
+            var remarks = '';
+            if (req.body.newStatus == "Replied" && typeof req.body.remarks == "undefined") {
+                res.status(400).send({
+                    status: 0,
+                    msg: 'Invalid Request'
+                })
+            }
+            else {
+                remarks = req.body.remarks;
+            }
+            Complaint.findOne({
+                complaintNumber
+            }).exec().then((savedComplaint) => {
+                if (!savedComplaint) {
+                    res.status(400).send({
+                        status: 0,
+                        msg: 'Invalid Complaint Number'
+                    });
+                }
+                else {
+                    if (savedComplaint.status == "Replied") {
+                        return res.status(400).send({
+                            status: 0,
+                            msg: 'No further action is possible as it has been marked as Replied.'
+                        });
+                    }
+                    else if (savedComplaint.status == "Under Consideration" && newStatus != "Replied") {
+                        return res.status(400).send({
+                            status: 0,
+                            msg: 'Only allowed action is marking it as Replied.'
+                        });
+                    }
+                    else {
+                        // Continue to update status/ official / actionTrail
+                        var query = Complaint.findByIdAndUpdate(savedComplaint._id, {
+                            $set: {
+                                status: newStatus,
+                                official: req.user._id
+                            },
+                            $push: {
+                                actionTrail: {
+                                    datetime: Date.now(),
+                                    action: `Status Changed to ${newStatus}`,
+                                    remarks,
+                                    user: req.user._id
+                                }
+                            }
+                        }).exec().then((result) => {
+                            if (!result) {
+                                return res.status(400).send({
+                                    status: 0,
+                                    msg: 'The status could not be updated.'
+                                });
+                            }
+                            else {
+                                return res.send({
+                                    status: 1,
+                                    msg: `Status successfully changed to ${newStatus}`
+                                });
+                            }
+                        }).catch((e) => {
+                            return res.status(500).send({
+                                status: 0,
+                                msg: 'Server Error',
+                                errorDetails: e
+                            })
+                        });
+                    }
+                }
+            });
+
+            $query = Complaint.findOneAndUpdate({
+                complaintNumber
+            }, {
+                    status: newStatus
+                }).exec();
+
         }
         else {
             res.status(400).send({
@@ -205,73 +292,6 @@ exports.updateStatus = (req, res) => {
                 msg: 'Invalid Request'
             })
         }
-
-        Complaint.findOne({
-            complaintNumber
-        }).exec().then((savedComplaint) => {
-            if (!savedComplaint) {
-                res.status(400).send({
-                    status: 0,
-                    msg: 'Invalid Complaint Number'
-                });
-            }
-            else {
-                if (savedComplaint.status == "Replied") {
-                    return res.status(400).send({
-                        status: 0,
-                        msg: 'No further action is possible as it has been marked as Replied.'
-                    });
-                }
-                else if (savedComplaint.status == "Under Consideration" && newStatus != "Replied") {
-                    return res.status(400).send({
-                        status: 0,
-                        msg: 'Only allowed action is marking it as Replied.'
-                    });
-                }
-                else {
-                    // Continue to update status/ official / actionTrail
-                    var query = Complaint.findByIdAndUpdate(savedComplaint._id, {
-                        $set: {
-                            status: newStatus,
-                            official: req.user._id
-                        },
-                        $push: {
-                            actionTrail: {
-                                datetime: Date.now(),
-                                action: `Status Changed to ${newStatus}`,
-                                user: req.user._id
-                            }
-                        }
-                    }).exec().then((result) => {
-                        if (!result) {
-                            return res.status(400).send({
-                                status: 0,
-                                msg: 'The status could not be updated.'
-                            });
-                        }
-                        else {
-                            return res.send({
-                                status: 1,
-                                msg: `Status successfully changed to ${newStatus}`
-                            });
-                        }
-                    }).catch((e) => {
-                        return res.status(500).send({
-                            status: 0,
-                            msg: 'Server Error',
-                            errorDetails: e
-                        })
-                    });
-                }
-
-            }
-        })
-
-        $query = Complaint.findOneAndUpdate({
-            complaintNumber
-        }, {
-                status: newStatus
-            }).exec();
     }
     else {
         res.status(400).send({

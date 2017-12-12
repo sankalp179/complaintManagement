@@ -68,6 +68,11 @@ var complaintSchema = new mongoose.Schema({
         datetime: {
             type: Date,
             default: Date.now()
+        },
+        remarks: {
+            type: String,
+            required: false,
+            trim: true
         }
     }]
 });
