@@ -143,3 +143,20 @@
   background: linear-gradient(154deg, #008fe2 0, #00b29c 100%);
   filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#008fe2', endColorstr='#00b29c', GradientType=1);
 }
+
+/* Removing Spinner from Number Input */
+
+.no-spinner::-webkit-inner-spin-button, .no-spinner::-webkit-outer-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
+tfoot input {
+  width: 100%;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+tfoot {
+  display: table-header-group;
+}
