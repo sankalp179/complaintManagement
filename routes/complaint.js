@@ -161,8 +161,6 @@ exports.getComplaint = (req, res) => {
                 complaintNumber,
                 complainant: req.user._id
             }, ' -official -_id -__v')
-            // .populate('complainant', 'name-_id')
-            // .exec();
             .populate([{
                 path: 'complainant',
                 select: 'name-_id'
@@ -174,13 +172,16 @@ exports.getComplaint = (req, res) => {
         else {
             var query = Complaint.findOne({
                 complaintNumber
-            }, '-_id -__v').populate([{
+            }, '-_id -__v')
+            .populate({
                 path: 'complainant',
-                select: 'name-_id'
-            }, {
+                select: 'name mobile email-_id'
+            })
+            .populate({
                 path: 'actionTrail.user',
                 select: 'name userType-_id'
-            }]).exec();
+            })
+            .exec();
         }
         query.then((complaint) => {
             if (!complaint) {

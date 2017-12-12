@@ -23,7 +23,10 @@ $(function () {
                     type: 'POST',
                     success: (data) => {
                         if (data.status) {
-                            window.location.href = './home'
+                            if(data.user.userType=='user')
+                                window.location.href = './home'
+                            else
+                                window.location.href = './statistics'
                         }
                         else {
                             alert(data.msg);
@@ -252,7 +255,10 @@ function load_complaint() {
             $('#c_type').text(complaintType);
             $('#c_para').text(relevantParaClause);
             $('#c_location').text(location);
-            $('#c_complainant').text(complainant.name);
+            if(!isad)
+                $('#c_complainant').text(complainant.name);
+            else
+                $('#c_complainant').text(`${complainant.name} - ${complainant.mobile} , ${complainant.email}`);            
             $('#c_head').text(`${objectionOrSuggestion} (#${cno})`);
             $('#c_posted_on').text(moment(postedOn).format("Do MMM YY, h:mm a"));
             if (isad && typeof data.official != "undefined" && typeof data.official.name != "undefined") {
