@@ -259,7 +259,7 @@ function load_complaint() {
                 $('#c_complainant').text(complainant.name);
             else
                 $('#c_complainant').text(`${complainant.name} - ${complainant.mobile} , ${complainant.email}`);            
-            $('#c_head').text(`${objectionOrSuggestion} (#${cno})`);
+            $('#c_head').text(`${objectionOrSuggestion} (ID : ${cno})`);
             $('#c_posted_on').text(moment(postedOn).format("Do MMM YY, h:mm a"));
             if (isad && typeof data.official != "undefined" && typeof data.official.name != "undefined") {
                 $('#c_official').text(data.official.name);
