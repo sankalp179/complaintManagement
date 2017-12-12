@@ -3,6 +3,16 @@
 
 <head>
     {{>head}}
+    <!-- froala-editor -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.css">
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/froala_editor.min.css' rel='stylesheet' type='text/css'
+    />
+    <link href='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/froala_style.min.css' rel='stylesheet' type='text/css'
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/plugins/image.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/plugins/video.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/css/plugins/file.min.css" />
 </head>
 
 <body>
@@ -57,8 +67,9 @@
 
                         </div>
                         <div id="action_div" class="row d-none">
-                            <div class="col-lg-8 offset-lg-2 mt-3 mb-5">
-                                <form class="text-center">
+                            {{!--
+                            <form class="text-center"> --}}
+                                <div class="col-lg-8 offset-lg-2 mt-3">
                                     <div class="form-group mx-sm-3">
                                         <label class="control-label" for="c_new_status">Mark as :&nbsp;&nbsp;</label>
                                         <select class="form-control" onchange="onStatusChange()" id="c_new_status">
@@ -67,14 +78,16 @@
                                             <option value="Replied">Replied</option>
                                         </select>
                                     </div>
+                                </div>
+                                <div class="col-lg-12 mt-3 mb-5">
                                     <div id="c_remarks_div" class="d-none form-group mx-sm-3">
                                         <label class="control-label" for="c_remarks">Comments :&nbsp;&nbsp;</label>
                                         <textarea id="c_remarks" class="form-control"></textarea>
                                     </div>
                                     <button onclick="javascript:changeStatus()" class="btn btn-success text-light btn-rounded px-4">Save</button>
-                                </form>
+                                </div>
+                                {{!-- </form> --}}
 
-                            </div>
                         </div>
                         <div class="row">
                             <div class="col-lg-12">
@@ -129,10 +142,10 @@
                 <div class="card mt-5">
                     <div class="card-body">
                         <div class="row border border-top-0 border-left-0 border-right-0">
-                                <p id="c_trail_head" class="col-lg-12 text-capitalize lead">Trail</p>
+                            <p id="c_trail_head" class="col-lg-12 text-capitalize lead">Trail</p>
                         </div>
                         <div class="trail" id="trail_list">
-                            
+
                         </div>
                     </div>
                 </div>
@@ -142,7 +155,36 @@
     </div>
     <!-- complaints end -->
 
+    {{!-- View Reply Modal --}}
+    <div class="modal" id="reply_modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reply</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="my-2 clearfix">
+                        <span class="text-muted float-left" id="reply_user"></span>
+                        <span class="text-muted float-right" id="reply_datetime"></span>
+                    </p>
+                    <div id="reply_content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="d-none" id="reply_modal_btn" data-toggle="modal" data-target="#reply_modal"></button>
+
     {{>js_scripts}}
+    <script>var replies = Object();</script>
+    <!-- froala-editor -->
+    <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/froala_editor.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/image.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/video.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/plugins/file.min.js"></script>
+
 </body>
 
 </html>

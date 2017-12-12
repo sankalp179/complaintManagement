@@ -6,35 +6,7 @@ $(function () {
     populate_links();
     if (typeof (pname) != "undefined") {
         switch (pname) {
-            case 'new': $('textarea').froalaEditor({
-                editorClass: 'border border-secondary',
-                enter: $.FroalaEditor.ENTER_BR,
-                fileAllowedTypes: ['application/pdf', 'application/msword'],
-                fileMaxSize: 20 * 1024 * 1024,
-                fileUploadMethod: 'POST',
-                fileUploadParam: 'file',
-                fileUploadParams: {},
-                fileUploadURL: '/upload',
-                height: 350,
-                heightMax: 500,
-                imageAllowedTypes: ['jpeg', 'jpg', 'png'],
-                imageDefaultDisplay: 'inline',
-                imageMaxSize: 5 * 1024 * 1024,
-                imageUploadMethod: 'POST',
-                imageUploadParam: 'file',
-                imageUploadParams: {},
-                imageUploadURL: '/upload',
-                toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-                toolbarButtonsMD: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-                toolbarButtonsSM: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-                toolbarButtonsXS: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-                videoAllowedTypes: ['mp4', 'webm', 'ogg'],
-                videoMaxSize: 50 * 1024 * 1024,
-                videoUploadMethod: 'POST',
-                videoUploadParam: 'file',
-                videoUploadParams: {},
-                videoUploadURL: '/upload',
-            });
+            case 'new': init_frola_editor();
                 break;
 
             case 'home': load_all_complaints(); break;
@@ -68,7 +40,7 @@ $(function () {
             });
                 break;
 
-            case 'view': load_complaint();
+            case 'view': load_complaint(); init_frola_editor();
                 break;
 
             case 'stats': initStats(); break;
@@ -79,6 +51,38 @@ $(function () {
     }
 
 });
+
+var init_frola_editor = () => {
+    $('textarea').froalaEditor({
+        editorClass: 'border border-secondary',
+        enter: $.FroalaEditor.ENTER_BR,
+        fileAllowedTypes: ['application/pdf', 'application/msword'],
+        fileMaxSize: 20 * 1024 * 1024,
+        fileUploadMethod: 'POST',
+        fileUploadParam: 'file',
+        fileUploadParams: {},
+        fileUploadURL: '/upload',
+        height: 350,
+        heightMax: 500,
+        imageAllowedTypes: ['jpeg', 'jpg', 'png'],
+        imageDefaultDisplay: 'inline',
+        imageMaxSize: 5 * 1024 * 1024,
+        imageUploadMethod: 'POST',
+        imageUploadParam: 'file',
+        imageUploadParams: {},
+        imageUploadURL: '/upload',
+        toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+        toolbarButtonsMD: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+        toolbarButtonsSM: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+        toolbarButtonsXS: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+        videoAllowedTypes: ['mp4', 'webm', 'ogg'],
+        videoMaxSize: 50 * 1024 * 1024,
+        videoUploadMethod: 'POST',
+        videoUploadParam: 'file',
+        videoUploadParams: {},
+        videoUploadURL: '/upload',
+    });
+}
 
 function load_all_complaints() {
     $.ajax({
@@ -282,19 +286,27 @@ function load_complaint() {
             // SHowing Trail Div
             $('#c_trail_head').text(`${objectionOrSuggestion} Trail`);
             if (actionTrail && actionTrail.length > 0) {
-                var itemMarkup='';
+                var itemMarkup = '';
                 for (var i = 0; i < actionTrail.length; i++) {
                     var item = actionTrail[i];
+                    if (item.remarks && item.remarks.trim()) {
+                        replies[item._id]=new Object({
+                            content : item.remarks,
+                            datetime : item.datetime,
+                            user: isad?item.user.name:item.user.userType
+                        });
+                    }
                     if (isad) {
                         itemMarkup += `
-                                        <div class="trail-item my-2 ${item.user.userType=="admin"?'right':''}">
+                                        <div class="trail-item my-2 ${item.user.userType == "admin" ? 'right' : ''}">
                                             <div class="trail-info clearfix">
                                                 <span class="trail-name float-left">${item.user.name}</span>
                                                 <span class="trail-timestamp float-right">${moment(item.datetime).format('Do MMM YY, h:mm a')}</span>
                                             </div>
                                             <div class="trail-text">
                                                ${item.action}
-                                               ${(item.remarks && item.remarks.trim()) ? '<br>' + item.remarks.trim() : ''}
+                                               
+                                               ${(item.remarks && item.remarks.trim()) ? '<a class="float-right" href="javascript:open_reply(\''+item._id+'\')">View Reply</a>' : ''}
                                             </div>
                                         </div>`;
                     }
@@ -306,7 +318,7 @@ function load_complaint() {
                                             </div>
                                             <div class="trail-text">
                                                ${item.action}
-                                               ${(item.remarks && item.remarks.trim()) ? '<br>' + item.remarks.trim() : ''}
+                                               ${(item.remarks && item.remarks.trim()) ? '<a class="float-right" href="javascript:open_reply(\'${item._id}\')">View Reply</a>' : ''}
                                             </div>
                                         </div>`;
                     }
@@ -325,6 +337,19 @@ function load_complaint() {
     })
 }
 
+var open_reply = (id) => {
+    if (typeof replies[id] != "undefined") {
+        $('#reply_content').html(replies[id]['content']);
+        $('#reply_datetime').html(moment(replies[id]['datetime']).format('Do MMM YY, h:mm a'));
+        $('#reply_user').html(replies[id]['user']);
+        $('#reply_modal_btn').click();
+    }
+    else {
+        // console.log(id,replies);
+        alert('Reply not found');
+    }
+}
+
 var onStatusChange = () => {
     if ($('#c_new_status').val() != "Replied")
         $('#c_remarks_div').addClass('d-none');
@@ -338,23 +363,32 @@ var changeStatus = () => {
         alert('Please select an option')
         return;
     }
-    $.ajax({
-        type: 'POST',
-        url: baseUrl + 'api/complaints/updateStatus/' + cno,
-        data: { newStatus },
-        success: (data) => {
-            if (data.status) {
-                alert('Status Updated Successfully');
-                window.location.href = window.location.href;
-            }
-        },
-        error: (e) => {
-            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
-                alert(e.responseJSON.msg);
-            else
-                alert('An error occured while communicating with server.\n\nTry refreshing the page.');
+    else {
+        if ($('#c_new_status').val() == "Replied" && !$('#c_remarks').val().trim()) {
+            alert('Please Enter Reply comment.');
+            return;
         }
-    })
+        else {
+            var remarks = $('#c_remarks').val();
+            $.ajax({
+                type: 'POST',
+                url: baseUrl + 'api/complaints/updateStatus/' + cno,
+                data: { newStatus, remarks },
+                success: (data) => {
+                    if (data.status) {
+                        alert('Status Updated Successfully');
+                        window.location.href = window.location.href;
+                    }
+                },
+                error: (e) => {
+                    if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                        alert(e.responseJSON.msg);
+                    else
+                        alert('An error occured while communicating with server.\n\nTry refreshing the page.');
+                }
+            })
+        }
+    }
 }
 
 var registerUser = () => {

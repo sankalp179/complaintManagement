@@ -47,7 +47,7 @@ app.get('/api/complaints/all', checkAuthentication, complaintsController.listAll
 app.get('/api/complaints/:complaintNumber', checkAuthentication, complaintsController.getComplaint);
 app.post('/api/complaints/updateStatus/:complaintNumber', checkAuthentication, checkPrivAdmin, complaintsController.updateStatus)
 
-app.post('/upload', checkAuthentication, checkPrivUser, fileController.upload);
+app.post('/upload', checkAuthentication, fileController.upload);
 app.get('/uploads/:fileName', fileController.serve);
 let serverPort = 3000;
 app.listen(serverPort, () => {
