@@ -669,3 +669,13 @@ var shareComplaintAJAX = (email, emailBody) => {
         }
     })
 }
+
+function initLocationAutocomplete() {
+    autocomplete = new google.maps.places.Autocomplete(
+        /** @type {!HTMLInputElement} */
+        (document.getElementById('location')), {//autocomplete
+            //types: ['establishment'],
+            componentRestrictions: { country: "in" },
+            radius: ['5000']
+        });
+}
