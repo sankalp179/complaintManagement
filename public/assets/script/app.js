@@ -623,6 +623,7 @@ var initStats = () => {
             }
         }
     });
+    $('.row.d-none').removeClass('d-none');
 }
 
 var shareComplaint = () => {
