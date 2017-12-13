@@ -46,6 +46,7 @@ app.post('/api/complaints/new', checkAuthentication, checkPrivUser, complaintsCo
 app.get('/api/complaints/all', checkAuthentication, complaintsController.listAllComplaints);
 app.get('/api/complaints/:complaintNumber', checkAuthentication, complaintsController.getComplaint);
 app.post('/api/complaints/updateStatus/:complaintNumber', checkAuthentication, checkPrivAdmin, complaintsController.updateStatus)
+app.post('/api/complaints/share/:complaintNumber', checkAuthentication, checkPrivAdmin, complaintsController.emailComplaint)
 
 app.post('/upload', checkAuthentication, fileController.upload);
 app.get('/uploads/:fileName', fileController.serve);

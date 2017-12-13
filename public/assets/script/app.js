@@ -23,7 +23,7 @@ $(function () {
                     type: 'POST',
                     success: (data) => {
                         if (data.status) {
-                            if(data.user.userType=='user')
+                            if (data.user.userType == 'user')
                                 window.location.href = './home'
                             else
                                 window.location.href = './statistics'
@@ -255,10 +255,10 @@ function load_complaint() {
             $('#c_type').text(complaintType);
             $('#c_para').text(relevantParaClause);
             $('#c_location').text(location);
-            if(!isad)
+            if (!isad)
                 $('#c_complainant').text(complainant.name);
             else
-                $('#c_complainant').text(`${complainant.name} - ${complainant.mobile} , ${complainant.email}`);            
+                $('#c_complainant').text(`${complainant.name} - ${complainant.mobile} , ${complainant.email}`);
             $('#c_head').text(`${objectionOrSuggestion} (ID : ${cno})`);
             $('#c_posted_on').text(moment(postedOn).format("Do MMM YY, h:mm a"));
             if (isad && typeof data.official != "undefined" && typeof data.official.name != "undefined") {
@@ -288,6 +288,8 @@ function load_complaint() {
                     break;
             }
             $("#status_steps_div").removeClass('d-none');
+            if (isad)
+                $('#shareComplaint').removeClass('d-none');
 
             // SHowing Trail Div
             $('#c_trail_head').text(`${objectionOrSuggestion} Trail`);
@@ -296,10 +298,10 @@ function load_complaint() {
                 for (var i = 0; i < actionTrail.length; i++) {
                     var item = actionTrail[i];
                     if (item.remarks && item.remarks.trim()) {
-                        replies[item._id]=new Object({
-                            content : item.remarks,
-                            datetime : item.datetime,
-                            user: isad?item.user.name:item.user.userType
+                        replies[item._id] = new Object({
+                            content: item.remarks,
+                            datetime: item.datetime,
+                            user: isad ? item.user.name : item.user.userType
                         });
                     }
                     if (isad) {
@@ -312,7 +314,7 @@ function load_complaint() {
                                             <div class="trail-text">
                                                ${item.action}
                                                
-                                               ${(item.remarks && item.remarks.trim()) ? '<a class="float-right" href="javascript:open_reply(\''+item._id+'\')">View Reply</a>' : ''}
+                                               ${(item.remarks && item.remarks.trim()) ? '<a class="float-right" href="javascript:open_reply(\'' + item._id + '\')">View Reply</a>' : ''}
                                             </div>
                                         </div>`;
                     }
@@ -621,4 +623,49 @@ var initStats = () => {
             }
         }
     });
+}
+
+var shareComplaint = () => {
+    var email = $('#shareComplaintEmail').val().trim();
+    var content = $('#shareComplaintBody').val().trim();
+    var err = [];
+    if (!validate_email(email)) {
+        err.push('Invalid Email Address.');
+    }
+    if (!content) {
+        err.push('Please Enter message to be sent along.');
+    }
+
+    if (err.length) {
+        alert(err.join('\n'));
+    }
+    else {
+        shareComplaintAJAX(email, content);
+    }
+
+}
+
+var shareComplaintAJAX = (email, emailBody) => {
+    if (!isad)
+        return;
+    $.ajax({
+        type: 'POST',
+        url: '/api/complaints/share/' + cno,
+        data: { email, emailBody },
+        success: (data) => {
+            if (data.status) {
+                alert(data.msg);
+                $('#shareComplaintModal button[data-dismiss="modal"]').click();
+            }
+            else {
+                alert(data.msg);
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                alert(e.responseJSON.msg);
+            else
+                alert('An error occured while communicating with server.\n\nTry refreshing the page.');
+        }
+    })
 }
