@@ -11,6 +11,181 @@ $(function () {
 
             case 'home': load_all_complaints(); break;
 
+            case 'forgotPassword' : $('form').on('submit',(e)=>{
+                e.preventDefault();
+                var email = $('#email').val();
+                var mobile = $('#mobile').val();
+                var err=[];
+                if(!validate_email(email)){
+                    err.push('Enter valid Email');
+                }
+                if (!validate_mobile(mobile)){
+                    err.push('Enter Valid Mobile Number');
+                }
+                if(err.length){
+                    swal({
+                        type : 'warning',
+                        html : (err.length>1)?err.join('<li>'):`<p>${err[0]}</p>`
+                    });
+                }
+                else{
+                    open_processing_ur_request_swal();
+                    $.ajax({
+                        type : 'POST',
+                        url: './api/user/requestResetPassword',
+                        data :{
+                            email,
+                            mobile
+                        },
+                        success : (data)=>{
+                            if(data.status){
+                                swal({
+                                    type: 'success',
+                                    html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
+                                }).then(()=>{
+                                    window.location.href='./login';
+                                },()=>{
+                                    window.location.href='./login';
+                                });
+                            }
+                            else{
+                                swal({
+                                    type: 'warning',
+                                    html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
+                                });
+                            }
+                        },
+                        error: (e) => {
+                            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                                swal({
+                                    type: 'warning',
+                                    html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                                });
+                            }
+                            else {
+                                swal({
+                                    type: 'warning',
+                                    html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                                });
+                            }
+                        }
+                    })
+                }
+            });
+            break;
+            case 'resetPassword' : 
+                            if(resetToken && resetToken.trim()){
+                                open_processing_ur_request_swal('Setting up the Page...');
+                                $.ajax({
+                                    type : 'POST',
+                                    url  : '../api/user/validateResetPasswordToken',
+                                    data : {
+                                        resetToken
+                                    },
+                                    success : (data)=>{
+                                        if(data.status){
+                                            $('#email').val(data.user.email);
+                                            $('div.container').removeClass('d-none');
+                                            swal.close();
+                                        }
+                                        else{
+                                            swal({
+                                                type : 'warning',
+                                                text : data.msg
+                                            });
+                                        }
+                                    },
+                                    error : (e)=>{
+                                        if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined"){
+                                            swal({
+                                                type: 'warning',
+                                                html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                                            }).then(()=>{
+                                                window.location.href='../forgotPassword';
+                                            },()=>{
+                                                window.location.href = '../forgotPassword';
+                                            });
+                                        }
+                                        else{
+                                            swal({
+                                                type : 'warning',
+                                                html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                                            }).then(()=>{
+                                                window.location.reload()
+                                            },()=>{
+                                                window.location.reload()
+                                            });
+                                        }
+                                    }
+                                });
+                            }
+                            else{
+                                alert('Invalid Request. Please check the link received in Email to reset the password');
+                                window.location.href='../login'
+                            }
+
+                            $('form').on('submit',(e)=>{
+                                e.preventDefault();
+                                var password = $('#password').val();
+                                var confirmPassword = $('#confirmPassword').val();
+                                if(password.length<6){
+                                    return swal({
+                                        type :'warning',
+                                        text : 'Password should be atleast be of 6 Chars.'
+                                    });
+                                }
+                                else{
+                                    if(password !== confirmPassword){
+                                        return swal({
+                                            type : 'warning',
+                                            text : 'Confirm Password doesn\'t match entered password'
+                                        });
+                                    }
+                                    else{
+                                        open_processing_ur_request_swal();
+                                        $.ajax({
+                                            type : 'POST',
+                                            url: '../api/user/resetPassword',
+                                            data : {resetToken,password},
+                                            success : (data)=>{
+                                                if(data.status){
+                                                    swal({
+                                                        type : 'success',
+                                                        text : data.msg
+                                                    }).then(()=>{
+                                                        window.location.href='../login'
+                                                    },()=>{
+                                                        window.location.href='../login'
+                                                    });;
+                                                }
+                                                else{
+                                                    swal({
+                                                        type : 'warning',
+                                                        text : data.msg
+                                                    })
+                                                }
+                                            },
+                                            error  : (e)=>{
+                                                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                                                    swal({
+                                                        type: 'warning',
+                                                        html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                                                    });
+                                                }
+                                                else {
+                                                    swal({
+                                                        type: 'warning',
+                                                        html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                                                    });
+                                                }
+                                            }
+
+                                        })
+                                    }
+                                }
+                            })
+                            break;
+
             case 'login': $('form').on('submit', (e) => {
                 e.preventDefault();
                 var data = {
@@ -480,7 +655,7 @@ var registerComplaint = () => {
 };
 
 var populate_links = () => {
-    if (pname == "login" || pname == "signup") {
+    if (pname == "login" || pname == "signup" || pname =="resetPassword") {
         $('ul.navbar-nav.flex-row').removeClass('d-md-flex').addClass('d-none');
     }
     else {
