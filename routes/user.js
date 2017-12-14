@@ -1,9 +1,12 @@
+const nodemailer = require('nodemailer');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
 
 const mongoose = require('./../server/db/mongoose');
 const User = require('./../server/models/user');
+
+const { emailConfig, adminEmailAddress } = require('./../config/email');
 
 exports.registerUser = (req, res) => {
     // Validating Name
@@ -130,7 +133,7 @@ exports.registerUser = (req, res) => {
                             return newUser.generateAuthToken();
                         })
                         .then((token) => {
-                            res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000*7 }).json({
+                            res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000 * 7 }).json({
                                 status: 1,
                                 msg: 'User Registration Successful',
                                 user: newUser,
@@ -161,6 +164,316 @@ exports.registerUser = (req, res) => {
     });
 
 
+};
+
+exports.editUserDetails = (req, res) => {
+    req.body = _.pick(req.body, ['name', 'mobile', 'email', 'aadharNumber']);
+    if (typeof (req.body.name) === "undefined" || typeof (req.body.mobile) === "undefined" || typeof (req.body.email) === "undefined" || typeof (req.body.aadharNumber) === "undefined") {
+        res.status(400).send({
+            status: 0,
+            msg: "Invalid request"
+        })
+    }
+    else {
+        var { name, email, mobile, aadharNumber } = req.body;
+        if (!validator.trim(name).length) {
+            return res.status(400).json({
+                msg: 'Name can\'t be empty',
+                status: 0
+            });
+        }
+        else {
+            if (!validator.isEmail(email)) {
+                return res.status(400).json({
+                    msg: 'Invalid Email',
+                    status: 0
+                });
+            }
+            else {
+                if (!validator.isMobilePhone(mobile, ['en-IN'])) {
+                    return res.status(400).json({
+                        msg: 'Invalid Mobile Number',
+                        status: 0
+                    });
+                }
+                else {
+                    if (!(validator.isNumeric(aadharNumber) && (validator.trim(aadharNumber).length == 12))) {
+                        return res.status(400).json({
+                            msg: 'Invalid aadharNumber',
+                            status: 0
+                        });
+                    }
+                    else {
+                        // All Good. çheck duplicacy of Mobile, Email
+                        // Checking If Email isn't associated with any other account.
+                        User.findOne({
+                            'email': email,
+                            '_id': {
+                                $ne: req.user._id
+                            }
+                        })
+                            .then((doc) => {
+                                if (doc) {
+                                    return res.status(400).json({
+                                        status: 0,
+                                        msg: 'Entered email is already associated with another account.'
+                                    });
+                                }
+                                else {
+                                    // Checking if Mobile isn't associated with any other account.
+                                    User.findOne({
+                                        mobile: mobile,
+                                        mobileVerified: true,
+                                        _id: {
+                                            $ne: req.user._id
+                                        }
+                                    }).
+                                        then((doc) => {
+                                            if (doc) {
+                                                return res.status(400).json({
+                                                    status: 0,
+                                                    msg: 'Entered mobile is already associated with another account.'
+                                                });
+                                            }
+                                            else {
+                                                var mobVerificationStatus = (req.user.mobile == mobile) ? req.user.mobileVerified : false;
+                                                // Register the User.
+                                                User.findByIdAndUpdate(req.user._id, {
+                                                    $set: {
+                                                        name,
+                                                        email,
+                                                        aadharNumber,
+                                                        mobile,
+                                                        mobileVerified: mobVerificationStatus
+                                                    }
+                                                }, (err, doc) => {
+                                                    if (err) {
+                                                        res.status(500).send({
+                                                            status: 0,
+                                                            msg: 'An error occured while updating the details',
+                                                            errorDetails: err
+                                                        });
+                                                    }
+                                                    else {
+                                                        res.send({
+                                                            status: 1,
+                                                            msg: 'Details Updated successfully',
+                                                            newDetails: doc
+                                                        })
+                                                    }
+                                                });
+                                            }
+                                        });
+                                }
+                            });
+                    }
+                }
+            }
+        }
+    }
+}
+
+exports.requestResetPassword = (req, res) => {
+    // generateForgotPassToken
+    if (typeof req.body.email == "undefined" || typeof req.body.mobile == "undefined"){
+        res.status(400).send({
+            status : 0,
+            msg : 'Invalid Request.'
+        });
+    }
+    else{
+        var {mobile,email} = req.body;
+        if (!validator.isMobilePhone(mobile, ['en-IN'])){
+            res.status(400).send({
+                status : 0,
+                msg : 'Invalid Mobile Number'
+            });
+        }
+        else{
+            if(!validator.isEmail(email)){
+                res.status(400).send({
+                    status : 0,
+                    msg  :'Invalid Email Address'
+                });
+            }
+            else{
+                User.findOne({
+                    email ,
+                    mobile
+                }).then((doc)=>{
+                    if(doc){
+                        console.log(doc)
+                         doc.generateAuthToken('forgotPass').then((token) => {
+                            var resetLink = req.protocol + '://' + req.get('host') +'/resetPassword/'+token;
+                            var transporter = nodemailer.createTransport(emailConfig);
+
+                            var mailOptions = {
+                                from: adminEmailAddress,
+                                to: `${doc.email}`,
+                                subject: `Password Reset Instructions`,
+                                html: `
+                                        <p>Dear ${doc.name},</p>
+                                        <p>You have raised a request to reset the password for your account. Please click the link below to reset the password.</p>
+                                        <br><a href="${resetLink}">Click to Reset Password</a><br>
+                                        <small>In case you haven't requested password reset, you can safely ignore this email.</small>
+                                        `
+                            };
+
+                            transporter.sendMail(mailOptions, function (error, info) {
+                                if (error) {
+                                    res.status(500).send({
+                                        status: 0,
+                                        msg: 'An error occured while processing your request.',
+                                        errorDetails: error
+                                    })
+                                }
+                                else {
+                                    res.send({
+                                        status: 1,
+                                        msg: 'Password Reset Instructions Sent to your email',
+                                        details: info.response
+                                    })
+                                }
+                            });
+
+                        }).catch((e) => {
+                            return res.status(400).send(e);
+                        });
+                    }
+                    else{
+                        res.status(400).send({
+                            status : 0,
+                            msg : 'No account is associated with the above details'
+                        });
+                    }
+                }).catch((e)=>{
+                    res.status(400).send({
+                        status: 0,
+                        msg: 'No account is associated with the above details'
+                    });
+                })
+            }
+        }
+    }
+}
+
+exports.validateResetPasswordToken = (req,res) => {
+    if(typeof req.body.resetToken === "undefined"){
+        res.status(400).send({
+            status : 0,
+            msg : 'Invalid Request',
+            errorDetails : 'Reset Token Not Found'
+        });
+    }
+    else{
+        var {resetToken} = req.body;
+        User.findbyToken(resetToken,'forgotPass').then((user) => {
+            if (!user) {
+                return res.status(400).json({
+                    status: 0,
+                    msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.'
+                });
+            }
+            else {
+                return res.send({
+                    status : 1,
+                    msg : 'Please fill the new password',
+                    user : user
+                });
+            }
+        }).catch((e) => {
+            res.status(400).json({
+                status: 0,
+                msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                errorDetails : e
+            });
+        });
+    }
+}
+
+var getPasswordHash = (password)=>{
+    bcrypt.genSalt(10, (err, salt) => {
+        if (err) 
+            return Promise.reject(err);
+
+        bcrypt.hash(user.password, salt, (err2, hash) => {
+            if(err)
+                return Promise.reject(err2);
+            else
+                return hash
+        });
+    });
+}
+
+exports.resetPassword = (req,res)=>{
+    if (typeof req.body.resetToken === "undefined" || typeof req.body.password ==="undefined" || req.body.password.length<6) {
+        res.status(400).send({
+            status: 0,
+            msg: 'Invalid Request',
+            errorDetails: 'Reset_Password_5'
+        });
+    }
+    else {
+        var { resetToken,password } = req.body;
+        console.log(resetToken, password);
+        User.findbyToken(resetToken, 'forgotPass').then((user) => {
+            if (!user) {
+                return res.status(400).json({
+                    status: 0,
+                    msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                    errorDetails: 'Reset_Password_4'
+                });
+            }
+            else {
+                getPasswordHash(password).then((hash)=>{
+                    User.findByIdAndUpdate(user._id,{
+                        $set : {
+                            password : hash 
+                        },
+                        $pull : {
+                            tokens : {
+                                token : resetToken,
+                                access : 'forgotPass'
+                            }
+                        }
+                    }).then((doc)=>{
+                        if(doc){
+                            res.status(200).send({
+                                status : 1,
+                                msg : 'Password Reset Successful.'
+                            })
+                        }
+                        else{
+                            res.status(400).send({
+                                status : 0,
+                                msg : 'An error occured while resting your account password',
+                                errorDetails: 'Reset_Password_3'
+                            })
+                        }
+                    }).catch((e)=>{
+                        res.status(400).send({
+                            status: 0,
+                            msg: 'An error occured while resting your account password',
+                            errorDetails: 'Reset_Password_2'
+                        })
+                    })
+                }).catch((e)=>{
+                    res.status(500).send({
+                        status  : 0,
+                        msg : 'Error occured while communicating with server',
+                        errorDetails : 'Reset_Password_1'
+                    });
+                })
+            }
+        }).catch((e) => {
+            res.status(400).json({
+                status: 0,
+                msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                errorDetails: 'Reset_Password_6',
+                e
+            });
+        });
+    }
 };
 
 exports.fetchLoggedUserDetails = (req, res) => {
@@ -232,7 +545,7 @@ exports.doLogin = (req, res) => {
                 user
             });
         }).catch((e) => {
-            return res.status(400).send();
+            return res.status(400).send(e);
         });
     }).catch((e) => {
         return res.status(400).json({
@@ -243,16 +556,16 @@ exports.doLogin = (req, res) => {
 
 }
 
-exports.logout = (req,res) => {
-    req.user.removeToken(req.token).then(()=>{
+exports.logout = (req, res) => {
+    req.user.removeToken(req.token).then(() => {
         return res.status(200).send({
-            status : 1,
-            msg : 'Successfully Logged Out.'
+            status: 1,
+            msg: 'Successfully Logged Out.'
         });
-    },()=>{
+    }, () => {
         return res.status(400).send({
-            status : 0,
-            msg : 'Unable to Log Out'
+            status: 0,
+            msg: 'Unable to Log Out'
         });
     })
 }
