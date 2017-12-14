@@ -24,6 +24,30 @@ exports.signup = (req, res) => {
     });
 }
 
+exports.forgotPassword = (req,res) =>{
+    res.render('forgotPassword.hbs',{
+        user : '',
+        isad : 0,
+        title: `Forgot Password |  ${organization_name}`,
+        organization_name,
+        pname: 'forgotPassword',
+        cno : 0,
+        level : ''
+    })
+}
+
+exports.resetPassword = (req,res) =>{
+    res.render('resetPassword.hbs',{
+        user : '',
+        isad : 0,
+        title: `Reset Password |  ${organization_name}`,
+        organization_name,
+        pname : 'resetPassword',
+        cno : 0,
+        level : '../',
+        resetToken : req.params.token
+    })
+}
 // -- Protected Routes -- //
 
 
