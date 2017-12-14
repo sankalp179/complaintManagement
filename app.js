@@ -28,6 +28,8 @@ app.use(cookieParser());
 app.get('/', AuthenticationNotWantedFrontend, frontend.login);
 app.get('/login', AuthenticationNotWantedFrontend, frontend.login);
 app.get('/signup', AuthenticationNotWantedFrontend, frontend.signup);
+app.get('/resetPassword/:token', AuthenticationNotWantedFrontend, frontend.resetPassword);
+app.get('/forgotPassword', AuthenticationNotWantedFrontend, frontend.forgotPassword);
 
 app.get('/account', AuthenticationWantedFrontend, frontend.account);
 app.get('/home', AuthenticationWantedFrontend, frontend.home);
@@ -40,6 +42,13 @@ app.post('/api/user/register', userController.registerUser);
 app.get('/api/user/me', checkAuthentication, userController.fetchLoggedUserDetails);
 app.post('/api/user/login', userController.doLogin);
 app.get('/api/user/logout', checkAuthentication, userController.logout);
+app.patch('/api/user/me', checkAuthentication, userController.editUserDetails);
+// app.patch('/api/user/changePassword', checkAuthentication, userController.changePassword);
+
+app.post('/api/user/requestResetPassword', userController.requestResetPassword);
+app.post('/api/user/validateResetPasswordToken',userController.validateResetPasswordToken);
+app.post('/api/user/resetPassword',userController.resetPassword);
+
 
 app.get('/api/complaints/stats', checkAuthentication, checkPrivAdmin, complaintsController.getStats);
 app.post('/api/complaints/new', checkAuthentication, checkPrivUser, complaintsController.registerNewComplaint);
