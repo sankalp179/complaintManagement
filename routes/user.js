@@ -130,7 +130,7 @@ exports.registerUser = (req, res) => {
 
                     newUser.save()
                         .then(() => {
-                            return newUser.generateAuthToken();
+                            return newUser.generateToken();
                         })
                         .then((token) => {
                             res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000 * 7 }).json({
@@ -303,7 +303,7 @@ exports.requestResetPassword = (req, res) => {
                 }).then((doc)=>{
                     if(doc){
                         console.log(doc)
-                         doc.generateAuthToken('forgotPass').then((token) => {
+                         doc.generateToken('forgotPass').then((token) => {
                             var resetLink = req.protocol + '://' + req.get('host') +'/resetPassword/'+token;
                             var transporter = nodemailer.createTransport(emailConfig);
 
@@ -371,7 +371,7 @@ exports.validateResetPasswordToken = (req,res) => {
             if (!user) {
                 return res.status(400).json({
                     status: 0,
-                    msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.'
+                    msg: 'You seemed to have clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.'
                 });
             }
             else {
@@ -384,7 +384,7 @@ exports.validateResetPasswordToken = (req,res) => {
         }).catch((e) => {
             res.status(400).json({
                 status: 0,
-                msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                msg: 'You seemed to have clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
                 errorDetails : e
             });
         });
@@ -392,17 +392,20 @@ exports.validateResetPasswordToken = (req,res) => {
 }
 
 var getPasswordHash = (password)=>{
-    bcrypt.genSalt(10, (err, salt) => {
-        if (err) 
-            return Promise.reject(err);
-
-        bcrypt.hash(user.password, salt, (err2, hash) => {
-            if(err)
-                return Promise.reject(err2);
-            else
-                return hash
+    return new Promise((resolve,reject)=>{
+        bcrypt.genSalt(10, (err, salt) => {
+            if (err)
+                return reject(err);
+            else{
+                bcrypt.hash(password, salt, (err2, hash) => {
+                    if (err2)
+                        return reject(err2);
+                    else
+                        return resolve(hash)
+                });
+            }
         });
-    });
+    })
 }
 
 exports.resetPassword = (req,res)=>{
@@ -415,18 +418,17 @@ exports.resetPassword = (req,res)=>{
     }
     else {
         var { resetToken,password } = req.body;
-        console.log(resetToken, password);
-        User.findbyToken(resetToken, 'forgotPass').then((user) => {
-            if (!user) {
+        User.findbyToken(resetToken, 'forgotPass').then((userDoc) => {
+            if (!userDoc) {
                 return res.status(400).json({
                     status: 0,
-                    msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                    msg: 'You seemed to have clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
                     errorDetails: 'Reset_Password_4'
                 });
             }
             else {
                 getPasswordHash(password).then((hash)=>{
-                    User.findByIdAndUpdate(user._id,{
+                    User.findByIdAndUpdate(userDoc._id,{
                         $set : {
                             password : hash 
                         },
@@ -468,7 +470,7 @@ exports.resetPassword = (req,res)=>{
         }).catch((e) => {
             res.status(400).json({
                 status: 0,
-                msg: 'You seemed to have typed/clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
+                msg: 'You seemed to have clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
                 errorDetails: 'Reset_Password_6',
                 e
             });
@@ -538,7 +540,7 @@ exports.doLogin = (req, res) => {
     }
 
     User.findByCredentials(email, enteredPassword).then((user) => {
-        return user.generateAuthToken().then((token) => {
+        return user.generateToken().then((token) => {
             return res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000 * 7 }).json({
                 status: 1,
                 msg: 'Login Successful',

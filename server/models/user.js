@@ -58,9 +58,9 @@ userSchema.methods.toJSON = function () {
     return _.pick(userObject, ['_id','name','mobile', 'email', 'userType', 'mobileVerified']);
 }
 
-userSchema.methods.generateAuthToken = function () {
+userSchema.methods.generateToken = function (tokenType='auth') {
     var user = this;
-    var access = 'auth';
+    var access = tokenType;
 
     var token = jwt.sign({
         _id: user._id.toHexString(),
@@ -82,19 +82,20 @@ userSchema.methods.removeToken = function(token){
     });
 }
 
-userSchema.statics.findbyToken = function (token) {
+userSchema.statics.findbyToken = function (token,tokenType = 'auth') {
     var User = this;
     var decoded;
     try {
         decoded = jwt.verify(token, jwtSecret);
     }
     catch (e) {
-        return Promise.reject();
+        return Promise.reject('Invalid token');
     }
+    // console.log('\n', '\n', decoded, '\n', '\n');
     return User.findOne({
         '_id': decoded._id,
         'tokens.token': token,
-        'tokens.access': 'auth'
+        'tokens.access': tokenType
     });
 }
 
