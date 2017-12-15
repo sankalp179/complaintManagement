@@ -36,14 +36,16 @@ app.get('/home', AuthenticationWantedFrontend, frontend.home);
 app.get('/new', AuthenticationWantedFrontend, frontend.new);
 app.get('/view/:complaintNumber', AuthenticationWantedFrontend, frontend.view);
 app.get('/statistics', AuthenticationWantedFrontend, frontend.stats);
-
+// app.get('/profile',checkAuthentication,frontend.showProfile);
 
 app.post('/api/user/register', userController.registerUser);
 app.get('/api/user/me', checkAuthentication, userController.fetchLoggedUserDetails);
 app.post('/api/user/login', userController.doLogin);
 app.get('/api/user/logout', checkAuthentication, userController.logout);
-app.patch('/api/user/me', checkAuthentication, userController.editUserDetails);
-// app.patch('/api/user/changePassword', checkAuthentication, userController.changePassword);
+
+// Edit User Profile
+app.patch('/api/user/profile', checkAuthentication, userController.editUserDetails);
+app.patch('/api/user/password', checkAuthentication, userController.changePassword);
 
 app.post('/api/user/requestResetPassword', userController.requestResetPassword);
 app.post('/api/user/validateResetPasswordToken',userController.validateResetPasswordToken);

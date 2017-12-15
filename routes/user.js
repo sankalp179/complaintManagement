@@ -478,9 +478,79 @@ exports.resetPassword = (req,res)=>{
     }
 };
 
+exports.changePassword = (req,res)=>{
+    if(typeof req.body.oldPassword =="undefined" || typeof req.body.newPassword =="undefined"||req.body.newPassword.length<6){
+        return res.status(400).send({
+            status : 0,
+            msg : 'Invalid Request'
+        });
+    }
+    else{
+        var oldPassword = req.body.oldPassword;
+        var newPassword = req.body.newPassword;
+        
+        User.findById(req.user._id).then((doc)=>{
+            if(doc){
+                bcrypt.compare(oldPassword, doc.password, (err, result) => {
+                    if (result){
+                        getPasswordHash(newPassword).then((hash)=>{
+                            User.findByIdAndUpdate(doc._id,{
+                                $set  :{
+                                    password : hash
+                                }
+                            })
+                            .then((result) => {
+                                res.send({
+                                    status: 1,
+                                    msg: 'Password changed successfully.'
+                                });
+                            })
+                            .catch((e) => {
+                                res.status(500).send({
+                                    status: 0,
+                                    msg: 'An error occured while updating your password.',
+                                    errorDetails: 'Change_Password_5',
+                                    e
+                                });
+                            })
+                        })
+                        .catch((e)=>{
+                            res.status(400).send({
+                                status : 0,
+                                msg : 'An error occured while processing your request.',
+                                errorDetails: 'Change_Password_4',
+                                e
+                            })
+                        })
+                    }
+                    else{
+                        res.status(400).send({
+                            status : 0,
+                            msg : 'The entered current password is invalid',
+                            errorDetails: 'Change_Password_3'
+                        });
+                    }
+                });
+            }
+            else{
+                res.status(400).send({
+                    status : 0,
+                    msg : 'An error occured while processing your request.',
+                    errorDetails : 'Change_Password_2'
+                });
+            }
+        }).catch((e)=>{
+            res.status(400).send({
+                status: 0,
+                msg: 'An error occured while processing your request.',
+                errorDetails: 'Change_Password_1'
+            });
+        });
+    }
+}
+
 exports.fetchLoggedUserDetails = (req, res) => {
     User.findById(req.user._id).then((doc) => {
-        // console.log(doc);
         var { name, mobile, email, aadharNumber, mobileVerified } = doc;
         if (doc) {
             res.json({ name, mobile, email, aadharNumber, mobileVerified });
