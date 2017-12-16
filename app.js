@@ -31,17 +31,17 @@ app.get('/signup', AuthenticationNotWantedFrontend, frontend.signup);
 app.get('/resetPassword/:token', AuthenticationNotWantedFrontend, frontend.resetPassword);
 app.get('/forgotPassword', AuthenticationNotWantedFrontend, frontend.forgotPassword);
 
-app.get('/account', AuthenticationWantedFrontend, frontend.account);
+app.get('/profile', AuthenticationWantedFrontend, frontend.profile);
 app.get('/home', AuthenticationWantedFrontend, frontend.home);
 app.get('/new', AuthenticationWantedFrontend, frontend.new);
 app.get('/view/:complaintNumber', AuthenticationWantedFrontend, frontend.view);
 app.get('/statistics', AuthenticationWantedFrontend, frontend.stats);
-// app.get('/profile',checkAuthentication,frontend.showProfile);
 
 app.post('/api/user/register', userController.registerUser);
-app.get('/api/user/me', checkAuthentication, userController.fetchLoggedUserDetails);
 app.post('/api/user/login', userController.doLogin);
 app.get('/api/user/logout', checkAuthentication, userController.logout);
+
+app.get('/api/user/profile', checkAuthentication, userController.fetchLoggedUserDetails);
 
 // Edit User Profile
 app.patch('/api/user/profile', checkAuthentication, userController.editUserDetails);

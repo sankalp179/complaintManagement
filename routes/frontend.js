@@ -86,8 +86,16 @@ exports.view = (req, res) => {
         level: '../'
     });
 }
-exports.account = (req, res) => {
-    // res.render()
+exports.profile = (req, res) => {
+    res.render('profile.hbs', {
+        title: `My Account | ${organization_name}`,
+        organization_name,
+        pname: 'profile',
+        user: (typeof req.user !== "undefined") ? req.user.name : '',
+        isad: Number(req.user.userType == "admin"),
+        cno: 0,
+        level: ''
+    });
 }
 
 exports.stats = (req, res) => {

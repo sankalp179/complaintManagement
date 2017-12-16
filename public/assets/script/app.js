@@ -10,45 +10,45 @@ $(function () {
                 break;
 
             case 'home': load_all_complaints(); break;
-
-            case 'forgotPassword' : $('form').on('submit',(e)=>{
+            case 'profile': load_profile_data(); break
+            case 'forgotPassword': $('form').on('submit', (e) => {
                 e.preventDefault();
                 var email = $('#email').val();
                 var mobile = $('#mobile').val();
-                var err=[];
-                if(!validate_email(email)){
+                var err = [];
+                if (!validate_email(email)) {
                     err.push('Enter valid Email');
                 }
-                if (!validate_mobile(mobile)){
+                if (!validate_mobile(mobile)) {
                     err.push('Enter Valid Mobile Number');
                 }
-                if(err.length){
+                if (err.length) {
                     swal({
-                        type : 'warning',
-                        html : (err.length>1)?err.join('<li>'):`<p>${err[0]}</p>`
+                        type: 'warning',
+                        html: (err.length > 1) ? err.join('<li>') : `<p>${err[0]}</p>`
                     });
                 }
-                else{
+                else {
                     open_processing_ur_request_swal();
                     $.ajax({
-                        type : 'POST',
+                        type: 'POST',
                         url: './api/user/requestResetPassword',
-                        data :{
+                        data: {
                             email,
                             mobile
                         },
-                        success : (data)=>{
-                            if(data.status){
+                        success: (data) => {
+                            if (data.status) {
                                 swal({
                                     type: 'success',
                                     html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
-                                }).then(()=>{
-                                    window.location.href='./login';
-                                },()=>{
-                                    window.location.href='./login';
+                                }).then(() => {
+                                    window.location.href = './login';
+                                }, () => {
+                                    window.location.href = './login';
                                 });
                             }
-                            else{
+                            else {
                                 swal({
                                     type: 'warning',
                                     html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
@@ -72,119 +72,119 @@ $(function () {
                     })
                 }
             });
-            break;
-            case 'resetPassword' : 
-                            if(resetToken && resetToken.trim()){
-                                open_processing_ur_request_swal('Setting up the Page...');
-                                $.ajax({
-                                    type : 'POST',
-                                    url  : '../api/user/validateResetPasswordToken',
-                                    data : {
-                                        resetToken
-                                    },
-                                    success : (data)=>{
-                                        if(data.status){
-                                            $('#email').val(data.user.email);
-                                            $('div.container').removeClass('d-none');
-                                            swal.close();
-                                        }
-                                        else{
-                                            swal({
-                                                type : 'warning',
-                                                text : data.msg
-                                            });
-                                        }
-                                    },
-                                    error : (e)=>{
-                                        if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined"){
-                                            swal({
-                                                type: 'warning',
-                                                html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
-                                            }).then(()=>{
-                                                window.location.href='../forgotPassword';
-                                            },()=>{
-                                                window.location.href = '../forgotPassword';
-                                            });
-                                        }
-                                        else{
-                                            swal({
-                                                type : 'warning',
-                                                html: 'An error occured while communicating with server.<br>Try refreshing the page.'
-                                            }).then(()=>{
-                                                window.location.reload()
-                                            },()=>{
-                                                window.location.reload()
-                                            });
-                                        }
-                                    }
+                break;
+            case 'resetPassword':
+                if (resetToken && resetToken.trim()) {
+                    open_processing_ur_request_swal('Setting up the Page...');
+                    $.ajax({
+                        type: 'POST',
+                        url: '../api/user/validateResetPasswordToken',
+                        data: {
+                            resetToken
+                        },
+                        success: (data) => {
+                            if (data.status) {
+                                $('#email').val(data.user.email);
+                                $('div.container').removeClass('d-none');
+                                swal.close();
+                            }
+                            else {
+                                swal({
+                                    type: 'warning',
+                                    text: data.msg
                                 });
                             }
-                            else{
-                                alert('Invalid Request. Please check the link received in Email to reset the password');
-                                window.location.href='../login'
+                        },
+                        error: (e) => {
+                            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                                swal({
+                                    type: 'warning',
+                                    html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                                }).then(() => {
+                                    window.location.href = '../forgotPassword';
+                                }, () => {
+                                    window.location.href = '../forgotPassword';
+                                });
                             }
+                            else {
+                                swal({
+                                    type: 'warning',
+                                    html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                                }).then(() => {
+                                    window.location.reload()
+                                }, () => {
+                                    window.location.reload()
+                                });
+                            }
+                        }
+                    });
+                }
+                else {
+                    alert('Invalid Request. Please check the link received in Email to reset the password');
+                    window.location.href = '../login'
+                }
 
-                            $('form').on('submit',(e)=>{
-                                e.preventDefault();
-                                var password = $('#password').val();
-                                var confirmPassword = $('#confirmPassword').val();
-                                if(password.length<6){
-                                    return swal({
-                                        type :'warning',
-                                        text : 'Password should be atleast be of 6 Chars.'
-                                    });
-                                }
-                                else{
-                                    if(password !== confirmPassword){
-                                        return swal({
-                                            type : 'warning',
-                                            text : 'Confirm Password doesn\'t match entered password'
-                                        });
+                $('form').on('submit', (e) => {
+                    e.preventDefault();
+                    var password = $('#password').val();
+                    var confirmPassword = $('#confirmPassword').val();
+                    if (password.length < 6) {
+                        return swal({
+                            type: 'warning',
+                            text: 'Password should be atleast be of 6 Chars.'
+                        });
+                    }
+                    else {
+                        if (password !== confirmPassword) {
+                            return swal({
+                                type: 'warning',
+                                text: 'Confirm Password doesn\'t match entered password'
+                            });
+                        }
+                        else {
+                            open_processing_ur_request_swal();
+                            $.ajax({
+                                type: 'POST',
+                                url: '../api/user/resetPassword',
+                                data: { resetToken, password },
+                                success: (data) => {
+                                    if (data.status) {
+                                        swal({
+                                            type: 'success',
+                                            text: data.msg
+                                        }).then(() => {
+                                            window.location.href = '../login'
+                                        }, () => {
+                                            window.location.href = '../login'
+                                        });;
                                     }
-                                    else{
-                                        open_processing_ur_request_swal();
-                                        $.ajax({
-                                            type : 'POST',
-                                            url: '../api/user/resetPassword',
-                                            data : {resetToken,password},
-                                            success : (data)=>{
-                                                if(data.status){
-                                                    swal({
-                                                        type : 'success',
-                                                        text : data.msg
-                                                    }).then(()=>{
-                                                        window.location.href='../login'
-                                                    },()=>{
-                                                        window.location.href='../login'
-                                                    });;
-                                                }
-                                                else{
-                                                    swal({
-                                                        type : 'warning',
-                                                        text : data.msg
-                                                    })
-                                                }
-                                            },
-                                            error  : (e)=>{
-                                                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
-                                                    swal({
-                                                        type: 'warning',
-                                                        html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
-                                                    });
-                                                }
-                                                else {
-                                                    swal({
-                                                        type: 'warning',
-                                                        html: 'An error occured while communicating with server.<br>Try refreshing the page.'
-                                                    });
-                                                }
-                                            }
-
+                                    else {
+                                        swal({
+                                            type: 'warning',
+                                            text: data.msg
                                         })
                                     }
+                                },
+                                error: (e) => {
+                                    if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                                        swal({
+                                            type: 'warning',
+                                            html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                                        });
+                                    }
+                                    else {
+                                        swal({
+                                            type: 'warning',
+                                            html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                                        });
+                                    }
                                 }
+
                             })
-                            break;
+                        }
+                    }
+                })
+                break;
 
             case 'login': $('form').on('submit', (e) => {
                 e.preventDefault();
@@ -655,7 +655,7 @@ var registerComplaint = () => {
 };
 
 var populate_links = () => {
-    if (pname == "login" || pname == "signup" || pname =="resetPassword") {
+    if (pname == "login" || pname == "signup" || pname == "resetPassword") {
         $('ul.navbar-nav.flex-row').removeClass('d-md-flex').addClass('d-none');
     }
     else {
@@ -854,4 +854,144 @@ function initLocationAutocomplete() {
             componentRestrictions: { country: "in" },
             radius: ['5000']
         });
+}
+
+function load_profile_data() {
+    $.ajax({
+        url: './api/user/profile',
+        type: 'GET',
+        data: {},
+        success: (data) => {
+            savedDetails = data;
+            populateUserProfileFields(savedDetails);
+            $('.hide_on_edit').fadeIn(200, () => {
+                $('#editProfileRow').addClass('d-none');
+            });
+
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    });
+}
+
+function editProfileDetails() {
+    $('.editProfileFields').removeAttr('disabled');
+    $('.hide_on_edit').fadeOut(200, () => {
+        $('#editProfileRow').removeClass('d-none');
+    });
+}
+
+function closeEditProfile() {
+    // check if values changed. then confirm
+    if (!hasUnsavedChanges()) {
+        show_hide_btns()
+    }
+    else {
+        swal({
+            type: 'warning',
+            text: "You have unsaved changes. On Clicking continue, your unsaved changes would be reverted.",
+            showConfirmButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Continue',
+            cancelButtonText: 'Cancel'
+        }).then(() => {
+            populateUserProfileFields(savedDetails);
+            show_hide_btns();
+        }, (dismiss) => {
+            return;
+        })
+    }
+
+    function show_hide_btns() {
+        $('.editProfileFields').attr('disabled', 'disabled');
+        $('.hide_on_edit').fadeIn();
+        $('#editProfileRow').addClass('d-none');
+    }
+}
+
+function hasUnsavedChanges() {
+    return (!($('#email').val() == savedDetails.email && $('#name').val() == savedDetails.name && $('#mobile').val() == savedDetails.mobile && $('#aadharNumber').val() == savedDetails.aadharNumber));
+}
+
+function saveUserProfile() {
+    if (!hasUnsavedChanges()) {
+        closeEditProfile()
+    }
+    else {
+        let name = $("#name").val();
+        let email = $("#email").val();
+        let mobile = $("#mobile").val();
+        let aadharNumber = $("#aadharNumber").val();
+        let err = [];
+        if (!name.length)
+            err.push('Name can\'t be left empty');
+        if (!validate_email(email))
+            err.push('Please enter valid Email');
+        if (!validate_mobile(mobile)) {
+            err.push('Please Enter Valid Mobile Number');
+        }
+        if (validate_aadhar(aadharNumber)) {
+            err.push('Please Enter Valid Aadhar number');
+        }
+        if (err.length) {
+            swal({
+                type: 'warning',
+                html: err.join('<li>')
+            })
+        }
+        else {
+            $.ajax({
+                url: './api/user/profile',
+                type: 'PATCH',
+                data: {
+                    name, email, mobile, aadharNumber
+                },
+                success: (data) => {
+                    if (data.status) {
+                        savedDetails ={
+                            name, email, mobile, aadharNumber
+                        };
+                        swal({
+                            type: 'success',
+                            text: data.msg,
+                            timer: 3000
+                        }).then(() => {
+                            closeEditProfile();
+                        }, (dismiss) => {
+                            closeEditProfile();
+                        })
+                    }
+                },
+                error: (e) => {
+                    if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                        swal({
+                            text: e.responseJSON.msg,
+                            type: 'warning'
+                        });
+                    else
+                        swal({
+                            text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                            type: 'warning'
+                        });
+                }
+            })
+        }
+    }
+}
+
+function populateUserProfileFields(data) {
+    $('#name').val(data.name).attr('disabled', 'disabled');
+    $('#mobile').val(data.mobile).attr('disabled', 'disabled');
+    $('#email').val(data.email).attr('disabled', 'disabled');
+    $('#aadharNumber').val(data.aadharNumber).attr('disabled', 'disabled');
 }
