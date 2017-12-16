@@ -660,8 +660,8 @@ var populate_links = () => {
     }
     else {
         $('a.navbar-brand').attr('href', baseUrl + 'home');
-        $('a.dropdown-item[href="javascript:goToProfile()"]').addClass('d-none');
-        // $('a[href="javascript:goToProfile()"]').attr('href', baseUrl + 'profile');
+        // $('a.dropdown-item[href="javascript:goToProfile()"]').addClass('d-none');
+        $('a[href="javascript:goToProfile()"]').attr('href', baseUrl + 'profile');
         $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
         if (isad) {
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
