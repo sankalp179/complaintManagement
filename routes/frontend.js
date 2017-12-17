@@ -55,7 +55,7 @@ exports.home = (req, res) => {
     res.render('all.hbs', {
         complaintNumber: req.params.complaintNumber,
         user: (typeof req.user !== "undefined") ? req.user.name : '',
-        isad: Number(req.user.userType == "admin"),
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
         title: `All Complaints | ${organization_name}`,
         organization_name,
         pname: 'home',
@@ -69,7 +69,7 @@ exports.new = (req, res) => {
         organization_name,
         pname: 'new',
         user: (typeof req.user !== "undefined") ? req.user.name : '',
-        isad: Number(req.user.userType == "admin"),
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
         cno: 0,
         level: ''
     });
@@ -81,7 +81,7 @@ exports.view = (req, res) => {
         organization_name,
         pname: 'view',
         user: (typeof req.user !== "undefined") ? req.user.name : '',
-        isad: Number(req.user.userType == "admin"),
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
         cno: req.params.complaintNumber,
         level: '../'
     });
@@ -92,19 +92,32 @@ exports.profile = (req, res) => {
         organization_name,
         pname: 'profile',
         user: (typeof req.user !== "undefined") ? req.user.name : '',
-        isad: Number(req.user.userType == "admin"),
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
         cno: 0,
         level: ''
     });
 }
 
+// Admin
 exports.stats = (req, res) => {
     res.render('stats.hbs',{
         title: `Statistics | ${organization_name}`,
         organization_name,
         pname: 'stats',
         user: (typeof req.user !== "undefined") ? req.user.name : '',
-        isad: Number(req.user.userType == "admin"),
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
+        cno: 0,
+        level: '../'
+    });
+}
+// SuperAdmin
+exports.manageAdminUsers = (req,res)=>{
+    res.render('manageAdminUsers.hbs', {
+        title: `Manage Admin | ${organization_name}`,
+        organization_name,
+        pname: 'manageAdminUsers',
+        user: (typeof req.user !== "undefined") ? req.user.name : '',
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
         cno: 0,
         level: '../'
     });

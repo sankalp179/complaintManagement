@@ -222,6 +222,7 @@ $(function () {
                 break;
 
             case 'stats': initStats(); break;
+            case 'manageAdminUsers': initManageAdminUsers(); break;
         }
     }
     else {
@@ -655,7 +656,7 @@ var registerComplaint = () => {
 };
 
 var populate_links = () => {
-    if (pname == "login" || pname == "signup" || pname == "resetPassword") {
+    if (pname == "login" || pname == "signup" || pname == "resetPassword" || pname == "forgotPassword") {
         $('ul.navbar-nav.flex-row').removeClass('d-md-flex').addClass('d-none');
     }
     else {
@@ -665,10 +666,12 @@ var populate_links = () => {
         $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
         if (isad) {
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
+            if(isad>1){
+                $('.navbar-nav-scroll .nav-item:nth-child(3) a').text('Users').attr('href', baseUrl + 'users').removeClass('d-none');
+            }
         }
         else {
-            // $('.navbar-nav-scroll .nav-item:nth-2child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
-
+            $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('New Suggestion/Objection').attr('href', baseUrl + 'new').removeClass('d-none');
         }
     }
@@ -958,7 +961,7 @@ function saveUserProfile() {
                 },
                 success: (data) => {
                     if (data.status) {
-                        savedDetails ={
+                        savedDetails = {
                             name, email, mobile, aadharNumber
                         };
                         swal({
@@ -994,4 +997,348 @@ function populateUserProfileFields(data) {
     $('#mobile').val(data.mobile).attr('disabled', 'disabled');
     $('#email').val(data.email).attr('disabled', 'disabled');
     $('#aadharNumber').val(data.aadharNumber).attr('disabled', 'disabled');
+}
+
+function saveNewPassword() {
+    var oldPassword = $("#oldPassword").val();
+    var newPassword = $("#newPassword").val();
+    var confirmPassword = $("#confirmPassword").val();
+
+    if (!oldPassword.length) {
+        swal({
+            type: 'warning',
+            text: 'Please Enter current Password'
+        });
+        return;
+    }
+    if (newPassword.length < 6) {
+        swal({
+            type: 'warning',
+            text: 'New Password has to be of atleast 6 chars.'
+        })
+        return;
+    }
+    else if (newPassword != confirmPassword) {
+        swal({
+            type: 'warning',
+            text: 'New Password and Confirm Password do not match'
+        });
+        return;
+    }
+    else {
+        $.ajax({
+            type: 'PATCH',
+            url: './api/user/password',
+            data: {
+                newPassword,
+                oldPassword
+            },
+            success: (data) => {
+                if (data.status) {
+                    swal({
+                        type: 'success',
+                        text: data.msg
+                    }).then(() => {
+                        $('#changePassword button[data-dismiss="modal"]').click();
+                    }, (dismiss) => {
+                        $('#changePassword button[data-dismiss="modal"]').click();
+                    })
+                }
+            },
+            error: (e) => {
+                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                    swal({
+                        text: e.responseJSON.msg,
+                        type: 'warning'
+                    });
+                else
+                    swal({
+                        text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                        type: 'warning'
+                    });
+            }
+        })
+    }
+
+}
+
+// Manage Admin users.
+function initManageAdminUsers() {
+    open_processing_ur_request_swal('Loading Users...');
+    $.ajax({
+        type: 'GET',
+        url: './api/user/list/admin',
+        data: {},
+        success: (data) => {
+            if (data.status) {
+                var users = data.data;
+                var tbody = '', tr = '';
+                if (users.length) {
+                    for (var i = 0; i < users.length; i++) {
+                        let temp = users[i];
+                        var actionBtns = '';
+                        if (temp.accountActive) {
+                            // Btn to deactivate A/c
+                            var accStatusBtn = `<button onclick="changeAccStatus(0,'${temp._id}')" class="btn btn-outline-secondary">Deactivate A/c</button>`
+                        }
+                        else {
+                            // Btn to activate A/c
+                            var accStatusBtn = `<button onclick="changeAccStatus(1,'${temp._id}')" class="btn btn-outline-secondary">Activate A/c</button>`
+                        }
+                        var deleteAccBtn = `&nbsp;&nbsp;<button onclick="deleteUserAccount('${temp._id}')" class="btn btn-outline-danger">Delete A/c</button>`;
+
+                        if (temp.superAdmin) {
+                            var superAdminBtn = `&nbsp;&nbsp;<button onclick="changePrivs(0,'${temp._id}')" class="btn btn-outline-secondary">Revoke</button>`
+                        }
+                        else {
+                            var superAdminBtn = `&nbsp;&nbsp;<button onclick="changePrivs(1,'${temp._id}')" class="btn btn-outline-secondary">Grant</button>`
+                        }
+
+                        tr = `<tr>
+                                <td>${i + 1}</td>
+                                <td>${temp.name}</td>
+                                <td>${temp.mobile}</td>
+                                <td>${temp.email}</td>
+                                <td>${temp.superAdmin ? 'Yes' : 'No'} ${superAdminBtn}</td>  
+                                <td>${temp.accountActive ? 'Active' : 'Disabled'} ${accStatusBtn}</td>
+                                <td>${deleteAccBtn}</td>
+                            <tr>
+                            `;
+                        tbody += tr;
+                    }
+                }
+                else {
+                    tbody = '<tr><td colspan=5>No Other Admins</td><tr>';
+                }
+                $('#usersTable tbody').html(tbody);
+                swal.close();
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    })
+}
+
+function changeAccStatus(newStatus, userid) {
+    open_processing_ur_request_swal();
+    $.ajax({
+        type: 'POST',
+        url: './api/user/changeAccStatus',
+        data: {
+            userid,
+            newStatus
+        },
+        success: (data) => {
+            if (data.status) {
+                swal({
+                    type: 'success',
+                    text: 'Account Status Changed'
+                }).then(() => {
+                    window.location.reload();
+                }, (dismiss) => {
+                    window.location.reload();
+                })
+            }
+            else {
+                swal({
+                    type: 'warning',
+                    text: data.msg
+                });
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    })
+}
+
+function deleteUserAccount(userid) {
+    swal({
+        type: 'info',
+        text: 'Deleting an account is permanent. This step cant be reversed. Are you sure you want to continue?',
+        showCancelButton: true,
+        showConfirmButton: true,
+        cancelButtonText: 'Cancel',
+        confirmButtonText: 'Confirm'
+    }).then(() => {
+        open_processing_ur_request_swal();
+        $.ajax({
+            type: 'POST',
+            url: './api/user/deleteUserAccount',
+            data: { userid },
+            success: (data) => {
+                if (data.status) {
+                    swal({
+                        type: 'success',
+                        msg: 'Account Deleted Successfully.'
+                    }).then(() => {
+                        window.location.reload();
+                    }, (dismiss) => {
+                        window.location.reload();
+                    });
+                }
+                else {
+                    swal({
+                        type: 'warning',
+                        text: data.msg
+                    });
+                }
+            },
+            error: (e) => {
+                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                    swal({
+                        text: e.responseJSON.msg,
+                        type: 'warning'
+                    });
+                else
+                    swal({
+                        text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                        type: 'warning'
+                    });
+            }
+        })
+    }, (dismiss) => {
+        return;
+    })
+}
+
+function changePrivs(newPriv, userid) {
+    open_processing_ur_request_swal();
+    $.ajax({
+        type: 'POST',
+        url: './api/user/changePrivs',
+        data: {
+            userid,
+            newPriv
+        },
+        success: (data) => {
+            if (data.status) {
+                swal({
+                    type: 'success',
+                    text: 'User Privilege Changed'
+                }).then(() => {
+                    window.location.reload();
+                }, (dismiss) => {
+                    window.location.reload();
+                })
+            }
+            else {
+                swal({
+                    type: 'warning',
+                    text: data.msg
+                });
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    })
+
+}
+
+function registerAdmin() {
+    var name = $('#fullName').val();
+    var email = $('#emailAddress').val();
+    var mobile = $('#mobileNumber').val();
+    var aadharNumber = $('#aadharNumber').val();
+    var superAdmin = $('#superAdmin').val()
+    var err = [];
+    if (!name.length) {
+        err.push('Name is required');
+    }
+    if (!validate_email(email))
+        err.push('Please Enter Valid Email');
+    if (validate_aadhar(aadharNumber))
+        err.push('Please Enter Valid Aadhar Number');
+    if (!validate_mobile(mobile))
+        err.push('Please Enter Vallid Mobile Number');
+
+    if (err.length > 1) {
+        swal({
+            type: 'warning',
+            html: err.join('<li>')
+        });
+        return;
+    } else if (err.length) {
+        swal({
+            type: 'warning',
+            text: err[0]
+        })
+        return;
+    }
+    else {
+        registerAdminAjax();
+    }
+
+    function registerAdminAjax() {
+        $.ajax({
+            type: 'POST',
+            url: './api/user/register/admin',
+            data: {
+                name,
+                email,
+                mobile,
+                aadharNumber,
+                superAdmin
+            },
+            success: (data) => {
+                if (data.status) {
+                    swal({
+                        type: 'success',
+                        text: 'New Admin User added.'
+                    }).then(() => {
+                        window.location.reload();
+                    }, (dismiss) => {
+                        window.location.reload();
+                    });
+                }
+                else {
+                    swal({
+                        type: 'warning',
+                        text: data.msg
+                    });
+                }
+            },
+            error: (e) => {
+                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                    swal({
+                        text: e.responseJSON.msg,
+                        type: 'warning'
+                    });
+                else
+                    swal({
+                        text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                        type: 'warning'
+                    });
+            }
+        })
+    }
 }

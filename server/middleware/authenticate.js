@@ -40,7 +40,7 @@ exports.checkAuthentication = (req, res, next) => {
 }
 
 exports.checkPrivAdmin = (req, res, next) => {
-    if (!(typeof (req.user.userType) != "undefined" && req.user.userType === "admin")) {
+    if (!(req.user.superAdmin==1 && req.user.userType === "admin")) {
         res.status(401).json({
             status: 0,
             msg: 'Operation Not Permitted. Insufficient Priviledge.'
@@ -70,6 +70,18 @@ exports.checkPrivUser = (req, res, next) => {
         //         msg :'You need to verify your mobile number first '
         //     });
         // }
+    }
+}
+
+exports.checkPrivSuperAdmin = (req,res,next) => {
+    if(!(req.user.userType=="admin" && req.user.superAdmin)){
+        res.status(401).send({
+            status : 0,
+            msg: 'Operation Not Permitted. Insufficient Priviledge.'
+        })
+    }
+    else{
+        next();
     }
 }
 
@@ -123,5 +135,32 @@ exports.AuthenticationNotWantedFrontend = (req, res, next) => {
     }
     else {
         next();
+    }
+}
+
+exports.AuthenticationWantedFrontendAdmin = (req,res,next)=>{
+    if(req.user.userType == "admin"){
+        next();
+    }
+    else{
+        res.redirect('//home');
+    }
+}
+
+exports.AuthenticationWantedFrontendUser = (req,res,next) =>{
+    if (req.user.userType == "user") {
+        next();
+    }
+    else {
+        res.redirect('//home');
+    }
+}
+
+exports.AuthenticationWantedFrontendSuperAdmin = (req,res,next) =>{
+    if (req.user.userType == "admin" && req.user.superAdmin) {
+        next();
+    }
+    else {
+        res.redirect('//home');
     }
 }

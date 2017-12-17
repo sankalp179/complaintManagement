@@ -5,7 +5,7 @@ const _ = require('lodash');
 const fileUpload = require('express-fileupload')
 const cookieParser = require('cookie-parser');
 
-const { checkAuthentication, checkPrivUser, checkPrivAdmin, AuthenticationNotWantedFrontend, AuthenticationWantedFrontend } = require('./server/middleware/authenticate');
+const { checkAuthentication, checkPrivUser, checkPrivAdmin, checkPrivSuperAdmin, AuthenticationNotWantedFrontend, AuthenticationWantedFrontend, AuthenticationWantedFrontendAdmin, AuthenticationWantedFrontendUser, AuthenticationWantedFrontendSuperAdmin } = require('./server/middleware/authenticate');
 const complaintsController = require('./routes/complaint');
 const userController = require('./routes/user');
 const fileController = require('./routes/file');
@@ -37,13 +37,23 @@ app.get('/new', AuthenticationWantedFrontend, frontend.new);
 app.get('/view/:complaintNumber', AuthenticationWantedFrontend, frontend.view);
 app.get('/statistics', AuthenticationWantedFrontend, frontend.stats);
 
+// For SuperAdmin - FrontEnd
+app.get('/users', AuthenticationWantedFrontend, AuthenticationWantedFrontendSuperAdmin, frontend.manageAdminUsers);
+
+// For SuperAdmins - BackEnd
+app.post('/api/user/register/admin', checkAuthentication, checkPrivSuperAdmin,userController.registerUser);
+app.get('/api/user/list/admin', checkAuthentication, checkPrivSuperAdmin, userController.listAdmin);
+app.post('/api/user/changeAccStatus', checkAuthentication, checkPrivSuperAdmin, userController.changeAccStatus);
+app.post('/api/user/deleteUserAccount', checkAuthentication, checkPrivSuperAdmin, userController.deleteUserAccount);
+app.post('/api/user/changePrivs', checkAuthentication, checkPrivSuperAdmin, userController.changePrivs);
+
+// Open APIs
 app.post('/api/user/register', userController.registerUser);
 app.post('/api/user/login', userController.doLogin);
 app.get('/api/user/logout', checkAuthentication, userController.logout);
 
+// User Profile
 app.get('/api/user/profile', checkAuthentication, userController.fetchLoggedUserDetails);
-
-// Edit User Profile
 app.patch('/api/user/profile', checkAuthentication, userController.editUserDetails);
 app.patch('/api/user/password', checkAuthentication, userController.changePassword);
 

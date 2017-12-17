@@ -9,6 +9,11 @@ const User = require('./../server/models/user');
 const { emailConfig, adminEmailAddress } = require('./../config/email');
 
 exports.registerUser = (req, res) => {
+
+    var adminRegistration = false;
+    if(req.originalUrl == "/api/user/register/admin")
+        adminRegistration = true;
+
     // Validating Name
     if (typeof (req.body.name) == "undefined") {
         return res.status(400).json({
@@ -64,24 +69,24 @@ exports.registerUser = (req, res) => {
             var mobile = req.body.mobile;
     }
 
-    // Validating Password
-    if (typeof (req.body.password) == "undefined") {
-        return res.status(400).json({
-            msg: 'Password missing',
-            status: 0
-        });
-    }
-    else {
-        if (req.body.password.length < 6) {
-            return res.status(400).JSON({
-                status: 0,
-                msg: 'Password has to be of atleast 6 chars'
+    if (!adminRegistration){
+        // Validating Password
+        if (typeof (req.body.password) == "undefined") {
+            return res.status(400).json({
+                msg: 'Password missing',
+                status: 0
             });
         }
+        else {
+            if (req.body.password.length < 6) {
+                return res.status(400).JSON({
+                    status: 0,
+                    msg: 'Password has to be of atleast 6 chars'
+                });
+            }
+        }
     }
-
-
-
+        
     // Validating Aadhar Number
     if (typeof (req.body.aadharNumber) == "undefined") {
         return res.status(400).json({
@@ -99,6 +104,28 @@ exports.registerUser = (req, res) => {
         else {
             var aadharNumber = req.body.aadharNumber;
         }
+    }
+
+    
+    var superAdmin = 0;
+    var userType = 'user';
+    var password = '';
+    if (adminRegistration) {
+        if (typeof req.body.superAdmin == "undefined" || [0, 1].indexOf(Number(req.body.superAdmin)) == -1) {
+            return res.status(400).send({
+                status: 0,
+                msg: 'Please Select whether to grant Super Admin privileges'
+            });
+        }
+        else {
+            superAdmin = Number(req.body.superAdmin);
+        }
+        userType = 'admin';
+        // password = Math.floor(Math.random() * 20); //Random Pass for New Admin User.
+        password = mobile ; //initialize password as user's mobile number
+    }
+    else{
+        password = req.body.password;
     }
 
     // Checking If Email isn't associated with any other account.
@@ -119,33 +146,54 @@ exports.registerUser = (req, res) => {
                     });
                 }
                 else {
+
                     // Register the User.
                     var newUser = new User({
                         name: req.body.name,
                         mobile: req.body.mobile,
                         aadharNumber: req.body.aadharNumber,
                         email: req.body.email,
-                        password: req.body.password
+                        userType,
+                        superAdmin,
+                        password,
+                        accountActive :1
                     });
 
-                    newUser.save()
-                        .then(() => {
-                            return newUser.generateToken();
-                        })
-                        .then((token) => {
-                            res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000 * 7 }).json({
-                                status: 1,
-                                msg: 'User Registration Successful',
-                                user: newUser,
-                                token: token
+                    if(adminRegistration){
+                        newUser.save()
+                            .then(() => {
+                                return res.status(200).send({
+                                    status : 1,
+                                    msg : 'User Registration Successful'
+                                });
+                            })
+                            .catch((e) => {
+                                res.status(500).json({
+                                    msg: 'Sever error',
+                                    err: e
+                                });
                             });
-                        })
-                        .catch((e) => {
-                            res.status(500).json({
-                                msg: 'Sever error',
-                                err: e
+                    }
+                    else{
+                        newUser.save()
+                            .then(() => {
+                                return newUser.generateToken();
+                            })
+                            .then((token) => {
+                                res.header('x-auth', token).cookie('x_auth', token, { maxAge: 86400000 * 7 }).json({
+                                    status: 1,
+                                    msg: 'User Registration Successful',
+                                    user: newUser,
+                                    token: token
+                                });
+                            })
+                            .catch((e) => {
+                                res.status(500).json({
+                                    msg: 'Sever error',
+                                    err: e
+                                });
                             });
-                        });
+                    }
                 }
             }).catch((e) => {
                 return res.status(500).json({
@@ -302,7 +350,7 @@ exports.requestResetPassword = (req, res) => {
                     mobile
                 }).then((doc)=>{
                     if(doc){
-                        console.log(doc)
+
                          doc.generateToken('forgotPass').then((token) => {
                             var resetLink = req.protocol + '://' + req.get('host') +'/resetPassword/'+token;
                             var transporter = nodemailer.createTransport(emailConfig);
@@ -622,7 +670,7 @@ exports.doLogin = (req, res) => {
     }).catch((e) => {
         return res.status(400).json({
             status: 0,
-            msg: 'Authentication failed'
+            msg : e
         })
     });
 
@@ -640,4 +688,142 @@ exports.logout = (req, res) => {
             msg: 'Unable to Log Out'
         });
     })
+}
+
+// Admin Management
+exports.listAdmin = (req,res)=>{
+    User.find({
+        userType: 'admin', 
+        _id: { $ne: req.user._id }
+    })
+    .then((doc)=>{
+        res.send({
+            status : 1,
+            data : doc
+        });
+    })
+    .catch((e)=>{
+        res.status(500).send({
+            status : 0,
+            msg : 'An error occured while loading list of admin users.',
+            errorDetails : e
+        })
+    })
+}
+
+exports.changeAccStatus =(req,res)=>{
+    if (typeof req.body.newStatus != "undefined" && [0, 1].indexOf(Number(req.body.newStatus))!=-1 && typeof req.body.userid !="undefined"){
+        var newStatus = Number(req.body.newStatus)?true:false;
+        var userid = req.body.userid;
+        User.findOneAndUpdate({
+            _id : userid,
+            userType : 'admin'
+        },{
+                accountActive: newStatus
+        }).then((doc)=>{
+            if(doc){
+                res.send({
+                    status : 1,
+                    msg : 'Account Status Changed Successfully'
+                })
+            }else{
+                res.status(400).send({
+                    status : 0,
+                    msg :'No such User exists.'
+                })
+            }
+        }).catch((e)=>{
+            res.status(500).send({
+                status :0,
+                msg : 'An error occured while changing Account Status',
+                errorDetails : e
+            })
+        });
+    }
+    else{
+        res.status(400).send({
+            status : 0,
+            msg : 'Invalid Request.'
+        })
+    }
+}
+
+exports.deleteUserAccount =(req,res)=>{
+    if (typeof req.body.userid != "undefined"){
+        var userid = req.body.userid;
+        User.findById({
+            id : userid
+        }).then((doc)=>{
+            if(doc){
+                if(doc.userType != "admin"){
+                    res.status(400).send({
+                        status : 0,
+                        msg :'Only admin\'s account can be deleted'
+                    });
+                }
+                else{
+                    res.status(500).send({
+                        status : 0,
+                        msg : 'User wasnt deleted.',
+                        errorDetails:' Code Incomplete'
+                    })
+                }
+            }
+            else{
+                res.status(400).send({
+                    status : 0,
+                    msg : 'No such user found'
+                });
+            }
+        }).catch((e)=>{
+            res.status(400).send({
+                status : 0,
+                msg : 'An error occured while processing your request.',
+                errorDetails :e
+            })
+        })
+    }
+    else{
+        res.status(400).send({
+            status : 0,
+            msg : 'Invalid Request'
+        })
+    }
+}
+
+exports.changePrivs =(req,res)=>{
+    if (typeof req.body.newPriv != "undefined" && [0, 1].indexOf(Number(req.body.newPriv)) != -1 && typeof req.body.userid != "undefined") {
+        var newPriv = Number(req.body.newPriv) ? true : false;
+        var userid = req.body.userid;
+        User.findOneAndUpdate({
+            _id: userid,
+            userType: 'admin'
+        }, {
+                superAdmin: newPriv
+            }).then((doc) => {
+                if (doc) {
+                    res.send({
+                        status: 1,
+                        msg: 'Account Privileges Changed Successfully'
+                    })
+                } else {
+                    res.status(400).send({
+                        status: 0,
+                        msg: 'No such User exists.'
+                    })
+                }
+            }).catch((e) => {
+                res.status(500).send({
+                    status: 0,
+                    msg: 'An error occured while changing Account Status',
+                    errorDetails: e
+                })
+            });
+    }
+    else {
+        res.status(400).send({
+            status: 0,
+            msg: 'Invalid Request.'
+        })
+    }
 }

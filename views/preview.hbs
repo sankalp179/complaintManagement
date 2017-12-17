@@ -195,7 +195,8 @@
                     <div class="form-group">
                         <label for="shareComplaintEmail">Sent to :</label>
                         <input type="email" class="form-control" id="shareComplaintEmail" aria-describedby="emailHelp" placeholder="Enter email">
-                        <small id="emailHelp" class="form-text text-muted">Email address to which you want to send mail. A copy of this email would also be sent to your email address.</small>
+                        <small id="emailHelp" class="form-text text-muted">Email address to which you want to send mail. A copy of this email would also be sent to your email
+                            address.</small>
                     </div>
                     <div class="form-group">
                         <label for="shareComplaintBody">Your Message</label>
@@ -206,12 +207,11 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                     <button type="button" onclick="shareComplaint()" class="btn btn-primary">Save changes</button>
                 </div>
-                </div>
             </div>
         </div>
+    </div>
 
-    {{>footer}}
-    {{>js_scripts}}
+    {{>footer}} {{>js_scripts}}
     <script>var replies = Object();</script>
     <!-- froala-editor -->
     <script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.7.2/js/froala_editor.min.js'></script>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {{>head}}
+</head>
+
+<body>
+    {{>navbar}}
+    <!-- editor -->
+    <div class="container my-5">
+        <div class="row">
+            <div class="col-lg-12 mx-auto">
+                <p class="h4 mb-4">Manage Admin Users
+                    <button data-toggle="modal" data-target="#addAdminModal" class="btn btn-primary btn-rounded px-4 float-right">Add Admin</button>
+                </p>
+                <table id="usersTable" class="table table-responsive">
+                    <thead>
+                        <tr>
+                            <th>SNo.</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Mobile</th>
+                            <th>SuperAdmin</th>
+                            <th>Account Status</th>
+                            <th>Delete Account</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="text-center border-secondary rounded p-2 mt-2 mb-5 border">Your own account is not displayed above.</div>
+            </div>
+        </div>
+    </div>
+    {{!-- Add Admin Modal --}}
+    <div class="modal fade" id="addAdminModal" tabindex="-1" role="dialog" aria-labelledby="addAdminLabel" aria-hidden="true">
+        <div class="modal-dialog " role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Add New Admin User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" class="form-control" id="fullName" placeholder="Enter your Name">
+                    </div>
+                    <div class="form-group">
+                        <label for="emailAddress">Email address</label>
+                        <input type="email" class="form-control" id="emailAddress" placeholder="Enter your email.">
+                    </div>
+                    <div class="form-group">
+                        <label for="mobileNumber">Mobile Number</label>
+                        <input type="number" class="form-control no-spinner" id="mobileNumber" aria-describedby="mobHelp" placeholder="Enter your Mobile Number">
+                    </div>
+                    <div class="form-group">
+                        <label for="aadharNumber">Aadhar Number</label>
+                        <input type="text" class="form-control" id="aadharNumber" placeholder="Enter your Aadhar Number.">
+                    </div>
+                    <div class="form-group">
+                        <label for="superAdmin">Choose User level</label>
+                        <select id="superAdmin" class="form-control">
+                            <option selected value="0">Regular Admin</option>
+                            <option value="1">Super Admin</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" onclick="registerAdmin()" class="btn btn-primary">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- editor end -->
+    {{>footer}} {{>js_scripts}}
+</body>
+
+</html>

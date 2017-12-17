@@ -36,6 +36,10 @@ var userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
+    superAdmin : {
+        type : Boolean,
+        default : false
+    },
     password: {
         type: String,
         required: true
@@ -49,13 +53,17 @@ var userSchema = new mongoose.Schema({
             type: String,
             required: true
         }
-    }]
+    }],
+    accountActive : {
+        type : Boolean,
+        default : true
+    }
 })
 
 userSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
-    return _.pick(userObject, ['_id','name','mobile', 'email', 'userType', 'mobileVerified']);
+    return _.pick(userObject, ['_id', 'name', 'mobile', 'email', 'userType', 'mobileVerified', 'superAdmin','accountActive']);
 }
 
 userSchema.methods.generateToken = function (tokenType='auth') {
@@ -104,20 +112,24 @@ userSchema.statics.findByCredentials = function (email, enteredPassword) {
 
     return User.findOne({ email }).then((user) => {
         if (!user) {
-            return Promise.reject('User not found');
+            return Promise.reject('We could not find an account with those details');
         }
         else {
+            console.log(user);
             return new Promise((resolve, reject) => {
 
                 bcrypt.compare(enteredPassword, user.password, (err, res) => {
-                    if (res)
-                        resolve(user);
-                    else
-                        reject('Wrong Password');
+                    if (res){
+                        if(user.accountActive)
+                            resolve(user);
+                        else
+                            reject('Your Account is temporarily disabled.');
+                    }
+                    else{
+                        reject('We could not find an account with those details');
+                        // reject('Wrong Password');
+                    }
                 });
-
-            }).catch((e) => {
-                reject('Server Error');
             });
         }
     });
