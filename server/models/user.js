@@ -115,9 +115,7 @@ userSchema.statics.findByCredentials = function (email, enteredPassword) {
             return Promise.reject('We could not find an account with those details');
         }
         else {
-            console.log(user);
             return new Promise((resolve, reject) => {
-
                 bcrypt.compare(enteredPassword, user.password, (err, res) => {
                     if (res){
                         if(user.accountActive)
