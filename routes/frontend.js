@@ -122,3 +122,14 @@ exports.manageAdminUsers = (req,res)=>{
         level: '../'
     });
 }
+exports.relevantParaLinks = (req,res)=>{
+    res.render('relevantParaLinks.hbs', {
+        title: `Manage Relevant Para & Links | ${organization_name}`,
+        organization_name,
+        pname: 'relevantParaLinks',
+        user: (typeof req.user !== "undefined") ? req.user.name : '',
+        isad: Number(req.user.userType == "admin")?(Number(req.user.superAdmin)?2:1):0,
+        cno: 0,
+        level: '../'
+    });
+}

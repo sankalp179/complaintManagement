@@ -9,6 +9,7 @@ const { checkAuthentication, checkPrivUser, checkPrivAdmin, checkPrivSuperAdmin,
 const complaintsController = require('./routes/complaint');
 const userController = require('./routes/user');
 const fileController = require('./routes/file');
+const relevantParaLinks = require('./routes/relevantParaLinks.js');
 const frontend = require('./routes/frontend');
 
 var app = express();
@@ -39,13 +40,15 @@ app.get('/statistics', AuthenticationWantedFrontend, frontend.stats);
 
 // For SuperAdmin - FrontEnd
 app.get('/users', AuthenticationWantedFrontend, AuthenticationWantedFrontendSuperAdmin, frontend.manageAdminUsers);
+app.get('/relevantParaLinks', AuthenticationWantedFrontend, AuthenticationWantedFrontendSuperAdmin, frontend.relevantParaLinks);
 
 // For SuperAdmins - BackEnd
 app.post('/api/user/register/admin', checkAuthentication, checkPrivSuperAdmin,userController.registerUser);
 app.get('/api/user/list/admin', checkAuthentication, checkPrivSuperAdmin, userController.listAdmin);
 app.post('/api/user/changeAccStatus', checkAuthentication, checkPrivSuperAdmin, userController.changeAccStatus);
 app.post('/api/user/deleteUserAccount', checkAuthentication, checkPrivSuperAdmin, userController.deleteUserAccount);
-app.post('/api/user/changePrivs', checkAuthentication, checkPrivSuperAdmin, userController.changePrivs);
+app.get('/api/relevantParaLinks', checkAuthentication, relevantParaLinks.get);
+app.post('/api/relevantParaLinks', checkAuthentication, checkPrivSuperAdmin, relevantParaLinks.set);
 
 // Open APIs
 app.post('/api/user/register', userController.registerUser);

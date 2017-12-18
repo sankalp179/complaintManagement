@@ -6,223 +6,16 @@ $(function () {
     populate_links();
     if (typeof (pname) != "undefined") {
         switch (pname) {
-            case 'new': init_frola_editor();
-                break;
-
+            case 'new': init_newComplaint();break;
             case 'home': load_all_complaints(); break;
             case 'profile': load_profile_data(); break
-            case 'forgotPassword': $('form').on('submit', (e) => {
-                e.preventDefault();
-                var email = $('#email').val();
-                var mobile = $('#mobile').val();
-                var err = [];
-                if (!validate_email(email)) {
-                    err.push('Enter valid Email');
-                }
-                if (!validate_mobile(mobile)) {
-                    err.push('Enter Valid Mobile Number');
-                }
-                if (err.length) {
-                    swal({
-                        type: 'warning',
-                        html: (err.length > 1) ? err.join('<li>') : `<p>${err[0]}</p>`
-                    });
-                }
-                else {
-                    open_processing_ur_request_swal();
-                    $.ajax({
-                        type: 'POST',
-                        url: './api/user/requestResetPassword',
-                        data: {
-                            email,
-                            mobile
-                        },
-                        success: (data) => {
-                            if (data.status) {
-                                swal({
-                                    type: 'success',
-                                    html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
-                                }).then(() => {
-                                    window.location.href = './login';
-                                }, () => {
-                                    window.location.href = './login';
-                                });
-                            }
-                            else {
-                                swal({
-                                    type: 'warning',
-                                    html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
-                                });
-                            }
-                        },
-                        error: (e) => {
-                            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
-                                swal({
-                                    type: 'warning',
-                                    html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
-                                });
-                            }
-                            else {
-                                swal({
-                                    type: 'warning',
-                                    html: 'An error occured while communicating with server.<br>Try refreshing the page.'
-                                });
-                            }
-                        }
-                    })
-                }
-            });
-                break;
-            case 'resetPassword':
-                if (resetToken && resetToken.trim()) {
-                    open_processing_ur_request_swal('Setting up the Page...');
-                    $.ajax({
-                        type: 'POST',
-                        url: '../api/user/validateResetPasswordToken',
-                        data: {
-                            resetToken
-                        },
-                        success: (data) => {
-                            if (data.status) {
-                                $('#email').val(data.user.email);
-                                $('div.container').removeClass('d-none');
-                                swal.close();
-                            }
-                            else {
-                                swal({
-                                    type: 'warning',
-                                    text: data.msg
-                                });
-                            }
-                        },
-                        error: (e) => {
-                            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
-                                swal({
-                                    type: 'warning',
-                                    html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
-                                }).then(() => {
-                                    window.location.href = '../forgotPassword';
-                                }, () => {
-                                    window.location.href = '../forgotPassword';
-                                });
-                            }
-                            else {
-                                swal({
-                                    type: 'warning',
-                                    html: 'An error occured while communicating with server.<br>Try refreshing the page.'
-                                }).then(() => {
-                                    window.location.reload()
-                                }, () => {
-                                    window.location.reload()
-                                });
-                            }
-                        }
-                    });
-                }
-                else {
-                    alert('Invalid Request. Please check the link received in Email to reset the password');
-                    window.location.href = '../login'
-                }
-
-                $('form').on('submit', (e) => {
-                    e.preventDefault();
-                    var password = $('#password').val();
-                    var confirmPassword = $('#confirmPassword').val();
-                    if (password.length < 6) {
-                        return swal({
-                            type: 'warning',
-                            text: 'Password should be atleast be of 6 Chars.'
-                        });
-                    }
-                    else {
-                        if (password !== confirmPassword) {
-                            return swal({
-                                type: 'warning',
-                                text: 'Confirm Password doesn\'t match entered password'
-                            });
-                        }
-                        else {
-                            open_processing_ur_request_swal();
-                            $.ajax({
-                                type: 'POST',
-                                url: '../api/user/resetPassword',
-                                data: { resetToken, password },
-                                success: (data) => {
-                                    if (data.status) {
-                                        swal({
-                                            type: 'success',
-                                            text: data.msg
-                                        }).then(() => {
-                                            window.location.href = '../login'
-                                        }, () => {
-                                            window.location.href = '../login'
-                                        });;
-                                    }
-                                    else {
-                                        swal({
-                                            type: 'warning',
-                                            text: data.msg
-                                        })
-                                    }
-                                },
-                                error: (e) => {
-                                    if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
-                                        swal({
-                                            type: 'warning',
-                                            html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
-                                        });
-                                    }
-                                    else {
-                                        swal({
-                                            type: 'warning',
-                                            html: 'An error occured while communicating with server.<br>Try refreshing the page.'
-                                        });
-                                    }
-                                }
-
-                            })
-                        }
-                    }
-                })
-                break;
-
-            case 'login': $('form').on('submit', (e) => {
-                e.preventDefault();
-                var data = {
-                    email: $('#email').val(),
-                    password: $('#password').val()
-                };
-                $.ajax({
-                    url: './api/user/login/',
-                    data: data,
-                    type: 'POST',
-                    success: (data) => {
-                        if (data.status) {
-                            if (data.user.userType == 'user')
-                                window.location.href = './home'
-                            else
-                                window.location.href = './statistics'
-                        }
-                        else {
-                            alert(data.msg);
-                        }
-                    },
-                    error: (e) => {
-                        // console.log(e)
-                        if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
-                            alert(e.responseJSON.msg);
-                        else
-                            alert('An error occured while communicating with server.\n\nTry refreshing the page.');
-                    }
-                })
-            });
-                break;
-
-            case 'view': load_complaint(); init_frola_editor();
-                break;
-
+            case 'forgotPassword': init_forgotPass();break;
+            case 'resetPassword': init_resetPassword();break;
+            case 'login': init_loginPage();break;
+            case 'view': load_complaint(); init_frola_editor();break;
             case 'stats': initStats(); break;
             case 'manageAdminUsers': initManageAdminUsers(); break;
+            case 'relevantParaLinks': init_relevantParaLinks();break;
         }
     }
     else {
@@ -231,35 +24,87 @@ $(function () {
 
 });
 
-var init_frola_editor = () => {
-    $('textarea').froalaEditor({
-        editorClass: 'border border-secondary',
-        enter: $.FroalaEditor.ENTER_BR,
-        fileAllowedTypes: ['application/pdf', 'application/msword'],
-        fileMaxSize: 20 * 1024 * 1024,
-        fileUploadMethod: 'POST',
-        fileUploadParam: 'file',
-        fileUploadParams: {},
-        fileUploadURL: '/upload',
-        height: 350,
-        heightMax: 500,
-        imageAllowedTypes: ['jpeg', 'jpg', 'png'],
-        imageDefaultDisplay: 'inline',
-        imageMaxSize: 5 * 1024 * 1024,
-        imageUploadMethod: 'POST',
-        imageUploadParam: 'file',
-        imageUploadParams: {},
-        imageUploadURL: '/upload',
-        toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-        toolbarButtonsMD: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-        toolbarButtonsSM: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-        toolbarButtonsXS: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
-        videoAllowedTypes: ['mp4', 'webm', 'ogg'],
-        videoMaxSize: 50 * 1024 * 1024,
-        videoUploadMethod: 'POST',
-        videoUploadParam: 'file',
-        videoUploadParams: {},
-        videoUploadURL: '/upload',
+var init_frola_editor = (type = 1) => {
+    if (type == 1) {
+        $('textarea').froalaEditor({
+            editorClass: 'border border-secondary',
+            enter: $.FroalaEditor.ENTER_BR,
+            fileAllowedTypes: ['application/pdf', 'application/msword'],
+            fileMaxSize: 20 * 1024 * 1024,
+            fileUploadMethod: 'POST',
+            fileUploadParam: 'file',
+            fileUploadParams: {},
+            fileUploadURL: '/upload',
+            height: 350,
+            heightMax: 500,
+            imageAllowedTypes: ['jpeg', 'jpg', 'png'],
+            imageDefaultDisplay: 'inline',
+            imageMaxSize: 5 * 1024 * 1024,
+            imageUploadMethod: 'POST',
+            imageUploadParam: 'file',
+            imageUploadParams: {},
+            imageUploadURL: '/upload',
+            toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsMD: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsSM: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsXS: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            videoAllowedTypes: ['mp4', 'webm', 'ogg'],
+            videoMaxSize: 50 * 1024 * 1024,
+            videoUploadMethod: 'POST',
+            videoUploadParam: 'file',
+            videoUploadParams: {},
+            videoUploadURL: '/upload',
+        });
+    }
+    else {
+        // Basic Editor- No video/img etc.
+        $('textarea').froalaEditor({
+            editorClass: 'border border-secondary',
+            enter: $.FroalaEditor.ENTER_BR,
+            height: 350,
+            heightMax: 500,
+            toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsMD: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsSM: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+            toolbarButtonsXS: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', '|', 'fontFamily', 'fontSize', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', 'quote', '-', 'insertLink', 'insertImage', 'insertVideo', 'embedly', 'insertFile', 'insertTable', '|', 'emoticons', 'specialCharacters', 'insertHR', 'selectAll', 'clearFormatting', '|', 'print', 'spellChecker', 'help', 'html', '|', 'undo', 'redo'],
+        });
+
+    }
+}
+
+function init_newComplaint(){
+    open_processing_ur_request_swal('Loading');
+
+    $.ajax({
+        type: 'GET',
+        url: './api/relevantParaLinks',
+        data: {},
+        success: (data) => {
+            if (data.status) {
+                var content = data.content;
+                $('#relevantParaDesc').html(content);
+                init_frola_editor();
+                swal.close();
+            }
+            else {
+                swal({
+                    text: data.msg,
+                    type: 'warning'
+                });
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
     });
 }
 
@@ -416,6 +261,216 @@ function logout() {
             else
                 alert('An error occured while communicating with server.\n\nTry refreshing the page.');
         }
+    });
+}
+
+function init_resetPassword(){
+    if (resetToken && resetToken.trim()) {
+        open_processing_ur_request_swal('Setting up the Page...');
+        $.ajax({
+            type: 'POST',
+            url: '../api/user/validateResetPasswordToken',
+            data: {
+                resetToken
+            },
+            success: (data) => {
+                if (data.status) {
+                    $('#email').val(data.user.email);
+                    $('div.container').removeClass('d-none');
+                    swal.close();
+                }
+                else {
+                    swal({
+                        type: 'warning',
+                        text: data.msg
+                    });
+                }
+            },
+            error: (e) => {
+                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                    swal({
+                        type: 'warning',
+                        html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                    }).then(() => {
+                        window.location.href = '../forgotPassword';
+                    }, () => {
+                        window.location.href = '../forgotPassword';
+                    });
+                }
+                else {
+                    swal({
+                        type: 'warning',
+                        html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                    }).then(() => {
+                        window.location.reload()
+                    }, () => {
+                        window.location.reload()
+                    });
+                }
+            }
+        });
+    }
+    else {
+        alert('Invalid Request. Please check the link received in Email to reset the password');
+        window.location.href = '../login'
+    }
+
+    $('form').on('submit', (e) => {
+        e.preventDefault();
+        var password = $('#password').val();
+        var confirmPassword = $('#confirmPassword').val();
+        if (password.length < 6) {
+            return swal({
+                type: 'warning',
+                text: 'Password should be atleast be of 6 Chars.'
+            });
+        }
+        else {
+            if (password !== confirmPassword) {
+                return swal({
+                    type: 'warning',
+                    text: 'Confirm Password doesn\'t match entered password'
+                });
+            }
+            else {
+                open_processing_ur_request_swal();
+                $.ajax({
+                    type: 'POST',
+                    url: '../api/user/resetPassword',
+                    data: { resetToken, password },
+                    success: (data) => {
+                        if (data.status) {
+                            swal({
+                                type: 'success',
+                                text: data.msg
+                            }).then(() => {
+                                window.location.href = '../login'
+                            }, () => {
+                                window.location.href = '../login'
+                            });;
+                        }
+                        else {
+                            swal({
+                                type: 'warning',
+                                text: data.msg
+                            })
+                        }
+                    },
+                    error: (e) => {
+                        if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                            swal({
+                                type: 'warning',
+                                html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                            });
+                        }
+                        else {
+                            swal({
+                                type: 'warning',
+                                html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                            });
+                        }
+                    }
+
+                })
+            }
+        }
+    })
+}
+
+function init_forgotPass(){
+    $('form').on('submit', (e) => {
+        e.preventDefault();
+        var email = $('#email').val();
+        var mobile = $('#mobile').val();
+        var err = [];
+        if (!validate_email(email)) {
+            err.push('Enter valid Email');
+        }
+        if (!validate_mobile(mobile)) {
+            err.push('Enter Valid Mobile Number');
+        }
+        if (err.length) {
+            swal({
+                type: 'warning',
+                html: (err.length > 1) ? err.join('<li>') : `<p>${err[0]}</p>`
+            });
+        }
+        else {
+            open_processing_ur_request_swal();
+            $.ajax({
+                type: 'POST',
+                url: './api/user/requestResetPassword',
+                data: {
+                    email,
+                    mobile
+                },
+                success: (data) => {
+                    if (data.status) {
+                        swal({
+                            type: 'success',
+                            html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
+                        }).then(() => {
+                            window.location.href = './login';
+                        }, () => {
+                            window.location.href = './login';
+                        });
+                    }
+                    else {
+                        swal({
+                            type: 'warning',
+                            html: `<span style="white-space:pre-wrap; word-break: normal">${data.msg}</span>`
+                        });
+                    }
+                },
+                error: (e) => {
+                    if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined") {
+                        swal({
+                            type: 'warning',
+                            html: `<span style="white-space:pre-wrap; word-break: normal">${e.responseJSON.msg}</span>`
+                        });
+                    }
+                    else {
+                        swal({
+                            type: 'warning',
+                            html: 'An error occured while communicating with server.<br>Try refreshing the page.'
+                        });
+                    }
+                }
+            })
+        }
+    });
+}
+
+function init_loginPage(){
+    $('form').on('submit', (e) => {
+        e.preventDefault();
+        var data = {
+            email: $('#email').val(),
+            password: $('#password').val()
+        };
+        $.ajax({
+            url: './api/user/login/',
+            data: data,
+            type: 'POST',
+            success: (data) => {
+                if (data.status) {
+                    if (data.user.userType == 'user')
+                        window.location.href = './home'
+                    else
+                        window.location.href = './statistics'
+                }
+                else {
+                    alert(data.msg);
+                }
+            },
+            error: (e) => {
+                // console.log(e)
+                if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                    alert(e.responseJSON.msg);
+                else
+                    alert('An error occured while communicating with server.\n\nTry refreshing the page.');
+            }
+        })
     });
 }
 
@@ -620,7 +675,6 @@ var registerComplaint = () => {
     var complaintType = $('#complaintType').val();
     var location = $('#location').val();
     var relevantParaClause = $('#paraClause').val();
-    var paraClauseLink = $('#paraClauseLink').val();
     var complaintDesc = $('#editor').val();
 
     var data = {
@@ -628,7 +682,6 @@ var registerComplaint = () => {
         complaintType,
         location,
         relevantParaClause,
-        paraClauseLink,
         complaintDesc
     };
 
@@ -666,7 +719,7 @@ var populate_links = () => {
         $('.navbar-nav-scroll .nav-item:nth-child(1) a').text('Home').attr('href', baseUrl + 'home').removeClass('d-none');
         if (isad) {
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
-            if(isad>1){
+            if (isad > 1) {
                 $('.navbar-nav-scroll .nav-item:nth-child(3) a').text('Users').attr('href', baseUrl + 'users').removeClass('d-none');
             }
         }
@@ -1341,4 +1394,72 @@ function registerAdmin() {
             }
         })
     }
+}
+
+function init_relevantParaLinks(){
+    $.ajax({
+        type : 'GET',
+        url: './api/relevantParaLinks',
+        data :{},
+        success : (data)=>{
+            if(data.status){
+                var content=data.content;
+                $('#relevantPara').val(content);
+                init_frola_editor(false);
+            }
+            else{
+                swal({
+                    text: data.msg,
+                    type: 'warning'
+                });
+            }    
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    })
+}
+
+function saveRelevantPara(){
+    var content = $('#relevantPara').val();
+    $.ajax({
+        type : 'POST',
+        url: './api/relevantParaLinks',
+        data : {content},
+        success : (data)=>{
+            if(data.status){
+                swal({
+                    type : 'success',
+                    text : 'Content Saved'
+                });
+            }
+            else{
+                swal({
+                    type : 'warning',
+                    text : data.msg
+                })
+            }
+        },
+        error: (e) => {
+            if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
+                swal({
+                    text: e.responseJSON.msg,
+                    type: 'warning'
+                });
+            else
+                swal({
+                    text: 'An error occured while communicating with server.\n\nTry refreshing the page.',
+                    type: 'warning'
+                });
+        }
+    })
 }

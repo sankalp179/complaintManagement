@@ -23,7 +23,7 @@
     <!-- editor -->
     <div class="container my-5">
         <div class="row">
-            <div class="col-12 col-lg-8 mx-auto">
+            <div class="col-lg-8 mx-auto">
                 <div class="row">
                     <div class="col-12">
                         <p class="h4 mb-4">Register New Suggestion or Objection</p>
@@ -62,20 +62,13 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-lg-6">
+                            <div class="col-lg-12">
                                 <div class="form-group">
                                     <label for="paraClause">Relevant Para/Clause</label>
                                     <input type="text" class="form-control" id="paraClause" placeholder="">
                                 </div>
                             </div>
-                            <div class="col-lg-6">
-                                <div class="form-group">
-                                    <label for="paraClauseLink">(Optional) Link to Relevant Para/Clause</label>
-                                    <input type="text" class="form-control" id="paraClauseLink" placeholder="">
-                                </div>
-                            </div>
                         </div>
-
                         <div class="form-group">
                             <label for="editor">Complaint Description</label>
                             <textarea id="editor" cols="30" rows="10"></textarea>
@@ -86,14 +79,19 @@
                     </div>
                 </div>
             </div>
+            <div class="col-lg-4">
+                <div class="row p-2 border border-secondary rounded">
+                    <p class="h5">Links to Para &amp; Clause</p>
+                    <br>
+                    <div class="border border-secondary border-top-0 col-lg-12"></div>
+                    <div class="col-lg-12 mb-2 mt-1 p-2" id="relevantParaDesc"></div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- editor end -->
 
-    {{>footer}}
-    
-    {{>js_scripts}}
-    {{!-- Google Location AutoSuggest --}}
+    {{>footer}} {{>js_scripts}} {{!-- Google Location AutoSuggest --}}
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBb0Vqua9lJeabXXlA3x9CLSshr7qCK25o&libraries=places&strictbounds&callback=initLocationAutocomplete"
         async defer></script>
     <!-- froala-editor -->

@@ -55,14 +55,6 @@ exports.registerNewComplaint = (req, res) => {
         }
     }
 
-    if (typeof (complaintBody.paraClauseLink) == "undefined") {
-        return res.status(400).json({
-            status: 0,
-            msg: 'Please enter Link of relevant Para/Clause'
-        });
-    }
-
-
     if (typeof (complaintBody.complaintDesc) == "undefined") {
         return res.status(400).json({
             status: 0,
@@ -97,7 +89,6 @@ exports.registerNewComplaint = (req, res) => {
         complaintType: complaintBody.complaintType,
         location: complaintBody.location,
         relevantParaClause: complaintBody.relevantParaClause,
-        paraClauseLink: complaintBody.paraClauseLink,
         objectionOrSuggestion: complaintBody.objectionOrSuggestion,
         complaintDesc: complaintBody.complaintDesc,
         complainant: req.user._id,
