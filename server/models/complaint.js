@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 
 var counter = require('../models/counter'); //counter model
 
-
 var complaintSchema = new mongoose.Schema({
     complaintNumber: {
         type: Number

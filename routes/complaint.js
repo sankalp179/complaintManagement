@@ -316,10 +316,36 @@ exports.getStats = (req, res) => {
             }
         }
     ]).exec().then((result) => {
-        res.send(result);
+        Complaint.aggregate([
+            {
+                $group: {
+                    _id: '$status',
+                    count: {
+                        $sum: 1
+                    }
+                }
+            }
+        ]).exec().then((result2) => {
+            res.send({
+                status : 1,
+                cStatus : result2,
+                cType : result
+            });
+            
+        }).catch((e) => {
+            res.status(400).send({
+                status : 0,
+                msg : 'An error occured while fetching data',
+                errorDetails :e
+            });
+        });
     }).catch((e) => {
-        res.status(400).send(e);
-    })
+        res.status(400).send({
+            status : 0,
+            msg : 'An error occured while fetching data',
+            errorDetails :e
+        });
+    });
 }
 
 exports.emailComplaint = (req, res) => {

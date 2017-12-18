@@ -6,16 +6,16 @@ $(function () {
     populate_links();
     if (typeof (pname) != "undefined") {
         switch (pname) {
-            case 'new': init_newComplaint();break;
+            case 'new': init_newComplaint(); break;
             case 'home': load_all_complaints(); break;
             case 'profile': load_profile_data(); break
-            case 'forgotPassword': init_forgotPass();break;
-            case 'resetPassword': init_resetPassword();break;
-            case 'login': init_loginPage();break;
-            case 'view': load_complaint(); init_frola_editor();break;
+            case 'forgotPassword': init_forgotPass(); break;
+            case 'resetPassword': init_resetPassword(); break;
+            case 'login': init_loginPage(); break;
+            case 'view': load_complaint(); init_frola_editor(); break;
             case 'stats': initStats(); break;
             case 'manageAdminUsers': initManageAdminUsers(); break;
-            case 'relevantParaLinks': init_relevantParaLinks();break;
+            case 'relevantParaLinks': init_relevantParaLinks(); break;
         }
     }
     else {
@@ -72,7 +72,7 @@ var init_frola_editor = (type = 1) => {
     }
 }
 
-function init_newComplaint(){
+function init_newComplaint() {
     open_processing_ur_request_swal('Loading');
 
     $.ajax({
@@ -264,7 +264,7 @@ function logout() {
     });
 }
 
-function init_resetPassword(){
+function init_resetPassword() {
     if (resetToken && resetToken.trim()) {
         open_processing_ur_request_swal('Setting up the Page...');
         $.ajax({
@@ -377,7 +377,7 @@ function init_resetPassword(){
     })
 }
 
-function init_forgotPass(){
+function init_forgotPass() {
     $('form').on('submit', (e) => {
         e.preventDefault();
         var email = $('#email').val();
@@ -441,7 +441,7 @@ function init_forgotPass(){
     });
 }
 
-function init_loginPage(){
+function init_loginPage() {
     $('form').on('submit', (e) => {
         e.preventDefault();
         var data = {
@@ -731,6 +731,13 @@ var populate_links = () => {
 }
 
 var initStats = () => {
+    var complaintType = ["Land Use Proposals", "Zoning Acquisition", "Infrastructure Provisions", "Demographic & Population Projections", "Environment Related", "MCA/Control Area/Village Boundary", "Traffic & Transportation", "Others"];
+    var cStatusCount = [0, 0, 0];
+    var suggestionsCount = [0, 0, 0, 0, 0, 0, 0, 0];
+    var objectionsCount = [0, 0, 0, 0, 0, 0, 0, 0];
+    var totalSuggestions = 0;
+    var totalObjections = 0;
+
     window.chartColors = {
         red: 'rgb(255, 99, 132)',
         orange: 'rgb(255, 159, 64)',
@@ -741,11 +748,46 @@ var initStats = () => {
         grey: 'rgb(201, 203, 207)'
     };
 
+    function getSum(total, num) {
+        return total + num;
+    }
+
     $.ajax({
         type: 'GET',
         url: './api/complaints/stats',
         success: (data) => {
-            console.log(data);
+            if (data.status) {
+                data.cType.forEach(e => {
+                    eType = e._id.complaintType
+                    var index = complaintType.indexOf(eType);
+                    if (index != -1) {
+                        if (e._id.objectionOrSuggestion == "Objection")
+                            objectionsCount[index] = e.count;
+                        else
+                            suggestionsCount[index] = e.count;
+                    }
+                    else {
+                        // Invalid Data.
+                        console.log('Invalid Data - ', e);
+                    }
+                });
+                totalSuggestions = suggestionsCount.reduce(getSum);
+                totalObjections = objectionsCount.reduce(getSum);
+                data.cStatus.forEach(e => {
+                    switch (e._id) {
+                        case "Registered": cStatusCount[0] = e.count; break;
+                        case "Under Consideration": cStatusCount[1] = e.count; break;
+                        case "Replied": cStatusCount[2] = e.count; break;
+                    }
+                });
+                init_charts();
+            }
+            else {
+                swal({
+                    type: 'warning',
+                    text: data.msg
+                });
+            }
         },
         error: (e) => {
             if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
@@ -756,105 +798,153 @@ var initStats = () => {
     });
 
 
-    var stat_1_ctx = document.getElementById("stat_1").getContext('2d');
-    var stat_1 = new Chart(stat_1_ctx, {
-        type: 'bar',
-        data: {
-            labels: ["Land Use Proposals", "Zoning Acquisition", "Infrastructure Provisions", "Demographic & Population Projections", "Environment Related", "MCA/Control Area/Village Boundary", "Traffic & Transportation", "Others"],
-            datasets: [{
-                label: 'Suggestions',
-                backgroundColor: window.chartColors.red,
-                yAxisID: "y-axis-1",
-                data: [30, 41, 14, 26, 6, 60, 96, 32]
-            }, {
-                label: 'Objections',
-                backgroundColor: window.chartColors.yellow,
-                yAxisID: "y-axis-1",
-                data: [33, 25, 75, 40, 49, 86, 79, 68]
-            }]
+    function init_charts() {
+        var stat_1_ctx = document.getElementById("stat_1").getContext('2d');
+        var stat_1 = new Chart(stat_1_ctx, {
+            type: 'bar',
+            data: {
+                labels: complaintType,
+                datasets: [{
+                    label: 'Suggestions',
+                    backgroundColor: window.chartColors.red,
+                    yAxisID: "y-axis-1",
+                    data: suggestionsCount
+                }, {
+                    label: 'Objections',
+                    backgroundColor: window.chartColors.yellow,
+                    yAxisID: "y-axis-1",
+                    data: objectionsCount
+                }]
 
-        },
-        options: {
-            responsive: true,
-            title: {
-                display: true,
-                text: "Objections & Suggestions - Type Wise"
             },
-            tooltips: {
-                mode: 'index',
-                intersect: true
-            },
-            scales: {
-                yAxes: [{
-                    type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+            options: {
+                responsive: true,
+                title: {
                     display: true,
-                    position: "left",
-                    id: "y-axis-1",
-                }],
-            },
-            hover: {
-                animationDuration: 0
-            },
-            animation: {
-                duration: 1,
-                onComplete: function () {
-                    var chartInstance = this.chart,
-                        ctx = chartInstance.ctx;
-                    ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'bottom';
+                    text: "Objections & Suggestions - Type Wise"
+                },
+                tooltips: {
+                    mode: 'index',
+                    intersect: true
+                },
+                scales: {
+                    yAxes: [{
+                        type: "linear", // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+                        display: true,
+                        position: "left",
+                        id: "y-axis-1",
+                        ticks: {
+                            min: 0,
+                            stepSize: 1
+                        }
+                    }],
+                },
+                hover: {
+                    animationDuration: 0
+                },
+                animation: {
+                    duration: 1,
+                    onComplete: function () {
+                        var chartInstance = this.chart,
+                            ctx = chartInstance.ctx;
+                        ctx.font = Chart.helpers.fontString(Chart.defaults.global.defaultFontSize, Chart.defaults.global.defaultFontStyle, Chart.defaults.global.defaultFontFamily);
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'bottom';
 
-                    this.data.datasets.forEach(function (dataset, i) {
-                        var meta = chartInstance.controller.getDatasetMeta(i);
-                        meta.data.forEach(function (bar, index) {
-                            var data = dataset.data[index];
-                            ctx.fillText(data, bar._model.x, bar._model.y - 5);
+                        this.data.datasets.forEach(function (dataset, i) {
+                            var meta = chartInstance.controller.getDatasetMeta(i);
+                            meta.data.forEach(function (bar, index) {
+                                var data = dataset.data[index];
+                                ctx.fillText(data, bar._model.x, bar._model.y - 5);
+                            });
                         });
-                    });
+                    }
                 }
             }
-        }
-    });
+        });
 
-    var stat_2_ctx = document.getElementById("stat_2").getContext('2d');
-    var stat_2 = new Chart(stat_2_ctx, {
-        type: 'doughnut',
-        data: {
-            "labels": ["Registered", "Under Consideration", "Replied"],
-            "datasets": [{
-                "label": "Status",
-                "data": [65, 59, 80],
-                "fill": true,
-                "backgroundColor": [window.chartColors.red,
-                window.chartColors.orange,
-                window.chartColors.green],
-                "borderColor": [window.chartColors.red,
-                window.chartColors.orange,
-                window.chartColors.green],
-                "borderWidth": 1
-            }]
-        },
-        "options": {
-            responsive: true,
-            maintainAspectRatio: true,
-            // legend: {
-            // position: 'right',
-            // },   
-            title: {
-                display: true,
-                text: "Status"
+        var stat_2_ctx = document.getElementById("stat_2").getContext('2d');
+        var stat_2 = new Chart(stat_2_ctx, {
+            type: 'doughnut',
+            data: {
+                "labels": ["Registered", "Under Consideration", "Replied"],
+                "datasets": [{
+                    "label": "Status",
+                    "data": cStatusCount,
+                    "fill": true,
+                    "backgroundColor": [
+                        window.chartColors.green,
+                        window.chartColors.orange,
+                        window.chartColors.red
+                    ],
+                    "borderColor": [
+                        window.chartColors.green,
+                        window.chartColors.orange,
+                        window.chartColors.red
+                    ],
+                    "borderWidth": 1
+                }]
             },
-            "layout": {
-                padding: {
-                    left: 10,
-                    right: 10,
-                    top: 10,
-                    bottom: 10
+            "options": {
+                responsive: true,
+                maintainAspectRatio: true,
+                // legend: {
+                // position: 'right',
+                // },   
+                title: {
+                    display: true,
+                    text: "Status"
+                },
+                "layout": {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
                 }
             }
-        }
-    });
-    $('.row.d-none').removeClass('d-none');
+        });
+
+        var stat_3_ctx = document.getElementById("stat_3").getContext('2d');
+        var stat_3 = new Chart(stat_3_ctx, {
+            type: 'doughnut',
+            data: {
+                "labels": ["Objections", "Suggestions"],
+                "datasets": [{
+                    "label": "Status",
+                    "data": [totalObjections, totalSuggestions],
+                    "fill": true,
+                    "backgroundColor": [window.chartColors.red,
+                    window.chartColors.green],
+                    "borderColor": [window.chartColors.red,
+                    window.chartColors.green],
+                    "borderWidth": 1
+                }]
+            },
+            "options": {
+                responsive: true,
+                maintainAspectRatio: true,
+                // legend: {
+                // position: 'right',
+                // },   
+                title: {
+                    display: true,
+                    text: "Status"
+                },
+                "layout": {
+                    padding: {
+                        left: 10,
+                        right: 10,
+                        top: 10,
+                        bottom: 10
+                    }
+                }
+            }
+        });
+        $('.row.d-none').removeClass('d-none');
+    }
+
 }
 
 var shareComplaint = () => {
@@ -1396,23 +1486,23 @@ function registerAdmin() {
     }
 }
 
-function init_relevantParaLinks(){
+function init_relevantParaLinks() {
     $.ajax({
-        type : 'GET',
+        type: 'GET',
         url: './api/relevantParaLinks',
-        data :{},
-        success : (data)=>{
-            if(data.status){
-                var content=data.content;
+        data: {},
+        success: (data) => {
+            if (data.status) {
+                var content = data.content;
                 $('#relevantPara').val(content);
                 init_frola_editor(false);
             }
-            else{
+            else {
                 swal({
                     text: data.msg,
                     type: 'warning'
                 });
-            }    
+            }
         },
         error: (e) => {
             if (typeof e.responseJSON != "undefined" && typeof e.responseJSON.msg != "undefined")
@@ -1429,23 +1519,23 @@ function init_relevantParaLinks(){
     })
 }
 
-function saveRelevantPara(){
+function saveRelevantPara() {
     var content = $('#relevantPara').val();
     $.ajax({
-        type : 'POST',
+        type: 'POST',
         url: './api/relevantParaLinks',
-        data : {content},
-        success : (data)=>{
-            if(data.status){
+        data: { content },
+        success: (data) => {
+            if (data.status) {
                 swal({
-                    type : 'success',
-                    text : 'Content Saved'
+                    type: 'success',
+                    text: 'Content Saved'
                 });
             }
-            else{
+            else {
                 swal({
-                    type : 'warning',
-                    text : data.msg
+                    type: 'warning',
+                    text: data.msg
                 })
             }
         },
