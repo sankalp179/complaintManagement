@@ -751,23 +751,14 @@ exports.changeAccStatus =(req,res)=>{
 exports.deleteUserAccount =(req,res)=>{
     if (typeof req.body.userid != "undefined"){
         var userid = req.body.userid;
-        User.findById({
-            id : userid
-        }).then((doc)=>{
+        User.findByIdAndRemove(
+            userid
+        ).then((doc)=>{
             if(doc){
-                if(doc.userType != "admin"){
-                    res.status(400).send({
-                        status : 0,
-                        msg :'Only admin\'s account can be deleted'
-                    });
-                }
-                else{
-                    res.status(500).send({
-                        status : 0,
-                        msg : 'User wasnt deleted.',
-                        errorDetails:' Code Incomplete'
-                    })
-                }
+                res.send({
+                    status: 1,
+                    msg: 'User deleted.'
+                })
             }
             else{
                 res.status(400).send({

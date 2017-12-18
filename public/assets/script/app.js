@@ -1242,7 +1242,7 @@ function deleteUserAccount(userid) {
                 if (data.status) {
                     swal({
                         type: 'success',
-                        msg: 'Account Deleted Successfully.'
+                        text: 'Account Deleted Successfully.'
                     }).then(() => {
                         window.location.reload();
                     }, (dismiss) => {
