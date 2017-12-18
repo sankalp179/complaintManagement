@@ -721,6 +721,7 @@ var populate_links = () => {
             $('.navbar-nav-scroll .nav-item:nth-child(2) a').text('Statistics').attr('href', baseUrl + 'statistics').removeClass('d-none');
             if (isad > 1) {
                 $('.navbar-nav-scroll .nav-item:nth-child(3) a').text('Users').attr('href', baseUrl + 'users').removeClass('d-none');
+                $('.navbar-nav-scroll .nav-item:nth-child(4) a').text('Para & Clause Links').attr('href', baseUrl + 'relevantParaLinks').removeClass('d-none');
             }
         }
         else {
