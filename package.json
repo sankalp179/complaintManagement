@@ -24,9 +24,10 @@
     "jsonwebtoken": "7.1.9",
     "lodash": "4.17.4",
     "md5": "2.2.1",
-    "mongodb": "2.2.5",
-    "mongoose": "4.5.9",
+    "mongodb": "3.0.0-rc0",
+    "mongoose": "4.13.7",
     "nodemailer": "4.4.1",
+    "request": "2.83.0",
     "validator": "9.1.2"
   }
 }
