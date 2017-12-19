@@ -59,6 +59,8 @@ app.get('/api/user/logout', checkAuthentication, userController.logout);
 app.get('/api/user/profile', checkAuthentication, userController.fetchLoggedUserDetails);
 app.patch('/api/user/profile', checkAuthentication, userController.editUserDetails);
 app.patch('/api/user/password', checkAuthentication, userController.changePassword);
+app.get('/api/user/generateOTP', checkAuthentication, userController.generateOTP);
+app.post('/api/user/checkOTP', checkAuthentication, userController.checkOTP);
 
 app.post('/api/user/requestResetPassword', userController.requestResetPassword);
 app.post('/api/user/validateResetPasswordToken',userController.validateResetPasswordToken);

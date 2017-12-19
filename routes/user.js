@@ -2,6 +2,7 @@ const nodemailer = require('nodemailer');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const _ = require('lodash');
+const request = require('request');
 
 const mongoose = require('./../server/db/mongoose');
 const User = require('./../server/models/user');
@@ -11,7 +12,7 @@ const { emailConfig, adminEmailAddress } = require('./../config/email');
 exports.registerUser = (req, res) => {
 
     var adminRegistration = false;
-    if(req.originalUrl == "/api/user/register/admin")
+    if (req.originalUrl == "/api/user/register/admin")
         adminRegistration = true;
 
     // Validating Name
@@ -69,7 +70,7 @@ exports.registerUser = (req, res) => {
             var mobile = req.body.mobile;
     }
 
-    if (!adminRegistration){
+    if (!adminRegistration) {
         // Validating Password
         if (typeof (req.body.password) == "undefined") {
             return res.status(400).json({
@@ -86,7 +87,7 @@ exports.registerUser = (req, res) => {
             }
         }
     }
-        
+
     // Validating Aadhar Number
     if (typeof (req.body.aadharNumber) == "undefined") {
         return res.status(400).json({
@@ -106,7 +107,7 @@ exports.registerUser = (req, res) => {
         }
     }
 
-    
+
     var superAdmin = 0;
     var userType = 'user';
     var password = '';
@@ -122,9 +123,9 @@ exports.registerUser = (req, res) => {
         }
         userType = 'admin';
         // password = Math.floor(Math.random() * 20); //Random Pass for New Admin User.
-        password = mobile ; //initialize password as user's mobile number
+        password = mobile; //initialize password as user's mobile number
     }
-    else{
+    else {
         password = req.body.password;
     }
 
@@ -156,15 +157,15 @@ exports.registerUser = (req, res) => {
                         userType,
                         superAdmin,
                         password,
-                        accountActive :1
+                        accountActive: 1
                     });
 
-                    if(adminRegistration){
+                    if (adminRegistration) {
                         newUser.save()
                             .then(() => {
                                 return res.status(200).send({
-                                    status : 1,
-                                    msg : 'User Registration Successful'
+                                    status: 1,
+                                    msg: 'User Registration Successful'
                                 });
                             })
                             .catch((e) => {
@@ -174,7 +175,7 @@ exports.registerUser = (req, res) => {
                                 });
                             });
                     }
-                    else{
+                    else {
                         newUser.save()
                             .then(() => {
                                 return newUser.generateToken();
@@ -323,36 +324,36 @@ exports.editUserDetails = (req, res) => {
 
 exports.requestResetPassword = (req, res) => {
     // generateForgotPassToken
-    if (typeof req.body.email == "undefined" || typeof req.body.mobile == "undefined"){
+    if (typeof req.body.email == "undefined" || typeof req.body.mobile == "undefined") {
         res.status(400).send({
-            status : 0,
-            msg : 'Invalid Request.'
+            status: 0,
+            msg: 'Invalid Request.'
         });
     }
-    else{
-        var {mobile,email} = req.body;
-        if (!validator.isMobilePhone(mobile, ['en-IN'])){
+    else {
+        var { mobile, email } = req.body;
+        if (!validator.isMobilePhone(mobile, ['en-IN'])) {
             res.status(400).send({
-                status : 0,
-                msg : 'Invalid Mobile Number'
+                status: 0,
+                msg: 'Invalid Mobile Number'
             });
         }
-        else{
-            if(!validator.isEmail(email)){
+        else {
+            if (!validator.isEmail(email)) {
                 res.status(400).send({
-                    status : 0,
-                    msg  :'Invalid Email Address'
+                    status: 0,
+                    msg: 'Invalid Email Address'
                 });
             }
-            else{
+            else {
                 User.findOne({
-                    email ,
+                    email,
                     mobile
-                }).then((doc)=>{
-                    if(doc){
+                }).then((doc) => {
+                    if (doc) {
 
-                         doc.generateToken('forgotPass').then((token) => {
-                            var resetLink = req.protocol + '://' + req.get('host') +'/resetPassword/'+token;
+                        doc.generateToken('forgotPass').then((token) => {
+                            var resetLink = req.protocol + '://' + req.get('host') + '/resetPassword/' + token;
                             var transporter = nodemailer.createTransport(emailConfig);
 
                             var mailOptions = {
@@ -388,13 +389,13 @@ exports.requestResetPassword = (req, res) => {
                             return res.status(400).send(e);
                         });
                     }
-                    else{
+                    else {
                         res.status(400).send({
-                            status : 0,
-                            msg : 'No account is associated with the above details'
+                            status: 0,
+                            msg: 'No account is associated with the above details'
                         });
                     }
-                }).catch((e)=>{
+                }).catch((e) => {
                     res.status(400).send({
                         status: 0,
                         msg: 'No account is associated with the above details'
@@ -405,17 +406,17 @@ exports.requestResetPassword = (req, res) => {
     }
 }
 
-exports.validateResetPasswordToken = (req,res) => {
-    if(typeof req.body.resetToken === "undefined"){
+exports.validateResetPasswordToken = (req, res) => {
+    if (typeof req.body.resetToken === "undefined") {
         res.status(400).send({
-            status : 0,
-            msg : 'Invalid Request',
-            errorDetails : 'Reset Token Not Found'
+            status: 0,
+            msg: 'Invalid Request',
+            errorDetails: 'Reset Token Not Found'
         });
     }
-    else{
-        var {resetToken} = req.body;
-        User.findbyToken(resetToken,'forgotPass').then((user) => {
+    else {
+        var { resetToken } = req.body;
+        User.findbyToken(resetToken, 'forgotPass').then((user) => {
             if (!user) {
                 return res.status(400).json({
                     status: 0,
@@ -424,27 +425,27 @@ exports.validateResetPasswordToken = (req,res) => {
             }
             else {
                 return res.send({
-                    status : 1,
-                    msg : 'Please fill the new password',
-                    user : user
+                    status: 1,
+                    msg: 'Please fill the new password',
+                    user: user
                 });
             }
         }).catch((e) => {
             res.status(400).json({
                 status: 0,
                 msg: 'You seemed to have clicked an Invalid or no longer valid reset password URL. Kindly check the link or request again from forgot Password Page.',
-                errorDetails : e
+                errorDetails: e
             });
         });
     }
 }
 
-var getPasswordHash = (password)=>{
-    return new Promise((resolve,reject)=>{
+var getPasswordHash = (password) => {
+    return new Promise((resolve, reject) => {
         bcrypt.genSalt(10, (err, salt) => {
             if (err)
                 return reject(err);
-            else{
+            else {
                 bcrypt.hash(password, salt, (err2, hash) => {
                     if (err2)
                         return reject(err2);
@@ -456,8 +457,8 @@ var getPasswordHash = (password)=>{
     })
 }
 
-exports.resetPassword = (req,res)=>{
-    if (typeof req.body.resetToken === "undefined" || typeof req.body.password ==="undefined" || req.body.password.length<6) {
+exports.resetPassword = (req, res) => {
+    if (typeof req.body.resetToken === "undefined" || typeof req.body.password === "undefined" || req.body.password.length < 6) {
         res.status(400).send({
             status: 0,
             msg: 'Invalid Request',
@@ -465,7 +466,7 @@ exports.resetPassword = (req,res)=>{
         });
     }
     else {
-        var { resetToken,password } = req.body;
+        var { resetToken, password } = req.body;
         User.findbyToken(resetToken, 'forgotPass').then((userDoc) => {
             if (!userDoc) {
                 return res.status(400).json({
@@ -475,43 +476,43 @@ exports.resetPassword = (req,res)=>{
                 });
             }
             else {
-                getPasswordHash(password).then((hash)=>{
-                    User.findByIdAndUpdate(userDoc._id,{
-                        $set : {
-                            password : hash 
+                getPasswordHash(password).then((hash) => {
+                    User.findByIdAndUpdate(userDoc._id, {
+                        $set: {
+                            password: hash
                         },
-                        $pull : {
-                            tokens : {
-                                token : resetToken,
-                                access : 'forgotPass'
+                        $pull: {
+                            tokens: {
+                                token: resetToken,
+                                access: 'forgotPass'
                             }
                         }
-                    }).then((doc)=>{
-                        if(doc){
+                    }).then((doc) => {
+                        if (doc) {
                             res.status(200).send({
-                                status : 1,
-                                msg : 'Password Reset Successful.'
+                                status: 1,
+                                msg: 'Password Reset Successful.'
                             })
                         }
-                        else{
+                        else {
                             res.status(400).send({
-                                status : 0,
-                                msg : 'An error occured while resting your account password',
+                                status: 0,
+                                msg: 'An error occured while resting your account password',
                                 errorDetails: 'Reset_Password_3'
                             })
                         }
-                    }).catch((e)=>{
+                    }).catch((e) => {
                         res.status(400).send({
                             status: 0,
                             msg: 'An error occured while resting your account password',
                             errorDetails: 'Reset_Password_2'
                         })
                     })
-                }).catch((e)=>{
+                }).catch((e) => {
                     res.status(500).send({
-                        status  : 0,
-                        msg : 'Error occured while communicating with server',
-                        errorDetails : 'Reset_Password_1'
+                        status: 0,
+                        msg: 'Error occured while communicating with server',
+                        errorDetails: 'Reset_Password_1'
                     });
                 })
             }
@@ -526,68 +527,68 @@ exports.resetPassword = (req,res)=>{
     }
 };
 
-exports.changePassword = (req,res)=>{
-    if(typeof req.body.oldPassword =="undefined" || typeof req.body.newPassword =="undefined"||req.body.newPassword.length<6){
+exports.changePassword = (req, res) => {
+    if (typeof req.body.oldPassword == "undefined" || typeof req.body.newPassword == "undefined" || req.body.newPassword.length < 6) {
         return res.status(400).send({
-            status : 0,
-            msg : 'Invalid Request'
+            status: 0,
+            msg: 'Invalid Request'
         });
     }
-    else{
+    else {
         var oldPassword = req.body.oldPassword;
         var newPassword = req.body.newPassword;
-        
-        User.findById(req.user._id).then((doc)=>{
-            if(doc){
+
+        User.findById(req.user._id).then((doc) => {
+            if (doc) {
                 bcrypt.compare(oldPassword, doc.password, (err, result) => {
-                    if (result){
-                        getPasswordHash(newPassword).then((hash)=>{
-                            User.findByIdAndUpdate(doc._id,{
-                                $set  :{
-                                    password : hash
+                    if (result) {
+                        getPasswordHash(newPassword).then((hash) => {
+                            User.findByIdAndUpdate(doc._id, {
+                                $set: {
+                                    password: hash
                                 }
                             })
-                            .then((result) => {
-                                res.send({
-                                    status: 1,
-                                    msg: 'Password changed successfully.'
-                                });
-                            })
+                                .then((result) => {
+                                    res.send({
+                                        status: 1,
+                                        msg: 'Password changed successfully.'
+                                    });
+                                })
+                                .catch((e) => {
+                                    res.status(500).send({
+                                        status: 0,
+                                        msg: 'An error occured while updating your password.',
+                                        errorDetails: 'Change_Password_5',
+                                        e
+                                    });
+                                })
+                        })
                             .catch((e) => {
-                                res.status(500).send({
+                                res.status(400).send({
                                     status: 0,
-                                    msg: 'An error occured while updating your password.',
-                                    errorDetails: 'Change_Password_5',
+                                    msg: 'An error occured while processing your request.',
+                                    errorDetails: 'Change_Password_4',
                                     e
-                                });
+                                })
                             })
-                        })
-                        .catch((e)=>{
-                            res.status(400).send({
-                                status : 0,
-                                msg : 'An error occured while processing your request.',
-                                errorDetails: 'Change_Password_4',
-                                e
-                            })
-                        })
                     }
-                    else{
+                    else {
                         res.status(400).send({
-                            status : 0,
-                            msg : 'The entered current password is invalid',
+                            status: 0,
+                            msg: 'The entered current password is invalid',
                             errorDetails: 'Change_Password_3'
                         });
                     }
                 });
             }
-            else{
+            else {
                 res.status(400).send({
-                    status : 0,
-                    msg : 'An error occured while processing your request.',
-                    errorDetails : 'Change_Password_2'
+                    status: 0,
+                    msg: 'An error occured while processing your request.',
+                    errorDetails: 'Change_Password_2'
                 });
             }
-        }).catch((e)=>{
+        }).catch((e) => {
             res.status(400).send({
                 status: 0,
                 msg: 'An error occured while processing your request.',
@@ -670,7 +671,7 @@ exports.doLogin = (req, res) => {
     }).catch((e) => {
         return res.status(400).json({
             status: 0,
-            msg : e
+            msg: e
         })
     });
 
@@ -691,98 +692,98 @@ exports.logout = (req, res) => {
 }
 
 // Admin Management
-exports.listAdmin = (req,res)=>{
+exports.listAdmin = (req, res) => {
     User.find({
-        userType: 'admin', 
+        userType: 'admin',
         _id: { $ne: req.user._id }
     })
-    .then((doc)=>{
-        res.send({
-            status : 1,
-            data : doc
-        });
-    })
-    .catch((e)=>{
-        res.status(500).send({
-            status : 0,
-            msg : 'An error occured while loading list of admin users.',
-            errorDetails : e
+        .then((doc) => {
+            res.send({
+                status: 1,
+                data: doc
+            });
         })
-    })
+        .catch((e) => {
+            res.status(500).send({
+                status: 0,
+                msg: 'An error occured while loading list of admin users.',
+                errorDetails: e
+            })
+        })
 }
 
-exports.changeAccStatus =(req,res)=>{
-    if (typeof req.body.newStatus != "undefined" && [0, 1].indexOf(Number(req.body.newStatus))!=-1 && typeof req.body.userid !="undefined"){
-        var newStatus = Number(req.body.newStatus)?true:false;
+exports.changeAccStatus = (req, res) => {
+    if (typeof req.body.newStatus != "undefined" && [0, 1].indexOf(Number(req.body.newStatus)) != -1 && typeof req.body.userid != "undefined") {
+        var newStatus = Number(req.body.newStatus) ? true : false;
         var userid = req.body.userid;
         User.findOneAndUpdate({
-            _id : userid,
-            userType : 'admin'
-        },{
+            _id: userid,
+            userType: 'admin'
+        }, {
                 accountActive: newStatus
-        }).then((doc)=>{
-            if(doc){
-                res.send({
-                    status : 1,
-                    msg : 'Account Status Changed Successfully'
+            }).then((doc) => {
+                if (doc) {
+                    res.send({
+                        status: 1,
+                        msg: 'Account Status Changed Successfully'
+                    })
+                } else {
+                    res.status(400).send({
+                        status: 0,
+                        msg: 'No such User exists.'
+                    })
+                }
+            }).catch((e) => {
+                res.status(500).send({
+                    status: 0,
+                    msg: 'An error occured while changing Account Status',
+                    errorDetails: e
                 })
-            }else{
-                res.status(400).send({
-                    status : 0,
-                    msg :'No such User exists.'
-                })
-            }
-        }).catch((e)=>{
-            res.status(500).send({
-                status :0,
-                msg : 'An error occured while changing Account Status',
-                errorDetails : e
-            })
-        });
+            });
     }
-    else{
+    else {
         res.status(400).send({
-            status : 0,
-            msg : 'Invalid Request.'
+            status: 0,
+            msg: 'Invalid Request.'
         })
     }
 }
 
-exports.deleteUserAccount =(req,res)=>{
-    if (typeof req.body.userid != "undefined"){
+exports.deleteUserAccount = (req, res) => {
+    if (typeof req.body.userid != "undefined") {
         var userid = req.body.userid;
         User.findByIdAndRemove(
             userid
-        ).then((doc)=>{
-            if(doc){
+        ).then((doc) => {
+            if (doc) {
                 res.send({
                     status: 1,
                     msg: 'User deleted.'
                 })
             }
-            else{
+            else {
                 res.status(400).send({
-                    status : 0,
-                    msg : 'No such user found'
+                    status: 0,
+                    msg: 'No such user found'
                 });
             }
-        }).catch((e)=>{
+        }).catch((e) => {
             res.status(400).send({
-                status : 0,
-                msg : 'An error occured while processing your request.',
-                errorDetails :e
+                status: 0,
+                msg: 'An error occured while processing your request.',
+                errorDetails: e
             })
         })
     }
-    else{
+    else {
         res.status(400).send({
-            status : 0,
-            msg : 'Invalid Request'
+            status: 0,
+            msg: 'Invalid Request'
         })
     }
 }
 
-exports.changePrivs =(req,res)=>{
+exports.changePrivs = (req, res) => {
     if (typeof req.body.newPriv != "undefined" && [0, 1].indexOf(Number(req.body.newPriv)) != -1 && typeof req.body.userid != "undefined") {
         var newPriv = Number(req.body.newPriv) ? true : false;
         var userid = req.body.userid;
@@ -816,5 +817,153 @@ exports.changePrivs =(req,res)=>{
             status: 0,
             msg: 'Invalid Request.'
         })
+    }
+}
+
+// OTP Verification
+exports.generateOTP = (req, res) => {
+    if (req.user.mobileVerified) {
+        res.status(400).send({
+            status: 0,
+            msg: 'User Already has Mobile Verified'
+        });
+    }
+    else {
+        var otp = Math.floor(1000 + Math.random() * 9000); //4 digit
+        var validTill = Date.now() + 300000
+        var smsContent = `Dear User,\n Please use ${otp} as OTP for verifying your mobile number. This OTP is valid for next 5 mins.`;
+        // var smslink = encodeURI("http://bhashsms.com/api/sendmsg.php?user=success&pass=123456&sender=TSUPOR&phone=" + req.user.mobile + "&text=" + smsContent + "&priority=ndnd&stype=normal");
+        var smslink = encodeURI("http://bhashsms.com/api/sendmsg.php?user=success&pass=123456&sender=TSUPOR&phone=" + req.user.mobile + "&text=" + smsContent + "&priority=ndnd&stype=normal");
+
+        request(smslink, {}, (err, result, body) => {
+            if (err) {
+                res.status(500).send({
+                    status: 0,
+                    msg: 'Error occured while sending OTP',
+                    errorDetails: err
+                });
+                console.log(err);
+            }
+            else {
+
+                var refNo = result.body.replace(/\s/g, '');
+                var query = User.findByIdAndUpdate(req.user._id, {
+                    $push: {
+                        OTP: {
+                            otp,
+                            validTill,
+                            refNo,
+                            mobile: req.user.mobile
+                        }
+                    }
+                })
+                    .exec()
+                    .then((doc) => {
+                        res.send({
+                            status: 1,
+                            msg: 'OTP was sent to your mobile.',
+                        })
+                    })
+                    .catch((e) => {
+                        res.status(400).send({
+                            status: 0,
+                            msg: 'Error Occured while sending OTP',
+                            errorDetails: e
+                        })
+                    });
+            }
+            // console.log(body.url);
+            // console.log(body.explanation);
+        });
+
+    }
+}
+
+exports.checkOTP = (req, res) => {
+    if (typeof req.body.otp != "undefined") {
+        User.findOne(
+            {
+                '_id': req.user._id
+            },
+            {
+
+                'OTP': {
+                    $elemMatch: {
+                        'otp': req.body.otp,
+                        'validTill': { $gte: new Date() }
+                    }
+                }
+            }).then((doc) => {
+                if (doc) {
+                    if (typeof doc.OTP != "undefined" && doc.OTP.length) {
+                        var verifiedMobile = doc.OTP[0].mobile;
+                        
+                       
+
+                        User.findByIdAndUpdate(req.user._id, {
+                            $set: {
+                                mobileVerified: true,
+                                mobile: verifiedMobile
+                            }
+                        }).then((doc) => {
+                            // unset mob verified for prev. verified user (if any)
+                            User.updateMany(
+                            { 
+                                $and: [
+                                        { '_id': { $ne: req.user._id } }, 
+                                        { 'mobile': verifiedMobile },
+                                        {'mobileVerified' : true}
+                                    ] 
+                            },
+                            {
+                                    $set: {
+                                        mobileVerified: false
+                                    }
+                                }).then((doc) => {
+                                    res.status(200).send({
+                                        status: 1,
+                                        msg: 'Mobile Number verified.'
+                                    })
+                                }).catch((e) => {
+                                    res.status(500).send({
+                                        status: 0,
+                                        msg: 'An error occured while processing your request.',
+                                        errorDetails: 'OTP_5'
+                                    });
+                                })
+
+                        }).catch((e) => {
+                            res.status(500).send({
+                                status: 0,
+                                msg: 'An error occured while processing your request.',
+                                errorDetails: 'OTP_4'
+                            });
+                        })
+                    }
+                    else {
+                        // Invalid OTP
+                        res.status(500).send({
+                            status: 0,
+                            msg: 'Entered OTP is either invalid or has expired',
+                            errorDetails: 'OTP_3'
+                        });
+                    }
+                }
+                else {
+                    // User not found.
+                    res.status(500).send({
+                        status: 0,
+                        msg: 'Entered OTP is either invalid or has expired',
+                        errorDetails: 'OTP_2'
+                    });
+                }
+            })
+    }
+    else {
+        res.status(400).send({
+            status: 0,
+            msg: 'Invalid Request',
+            errorDetails: 'OTP_1'
+        });
     }
 }

@@ -36,9 +36,9 @@ var userSchema = new mongoose.Schema({
         enum: ['user', 'admin'],
         default: 'user'
     },
-    superAdmin : {
-        type : Boolean,
-        default : false
+    superAdmin: {
+        type: Boolean,
+        default: false
     },
     password: {
         type: String,
@@ -54,19 +54,36 @@ var userSchema = new mongoose.Schema({
             required: true
         }
     }],
-    accountActive : {
-        type : Boolean,
-        default : true
-    }
+    accountActive: {
+        type: Boolean,
+        default: true
+    },
+    OTP: [{
+        otp: {
+            type: String,
+            required: true
+        },
+        validTill: {
+            type: Date,
+            default: Date.now() + 300000 //5 mins from now
+        },
+        refNo: {
+            type: String
+        },
+        mobile: {
+            type: String,
+            required: true
+        }
+    }]
 })
 
 userSchema.methods.toJSON = function () {
     var user = this;
     var userObject = user.toObject();
-    return _.pick(userObject, ['_id', 'name', 'mobile', 'email', 'userType', 'mobileVerified', 'superAdmin','accountActive']);
+    return _.pick(userObject, ['_id', 'name', 'mobile', 'email', 'userType', 'mobileVerified', 'superAdmin', 'accountActive']);
 }
 
-userSchema.methods.generateToken = function (tokenType='auth') {
+userSchema.methods.generateToken = function (tokenType = 'auth') {
     var user = this;
     var access = tokenType;
 
@@ -81,16 +98,16 @@ userSchema.methods.generateToken = function (tokenType='auth') {
     })
 }
 
-userSchema.methods.removeToken = function(token){
+userSchema.methods.removeToken = function (token) {
     var user = this;
     return user.update({
-        $pull : {
-            tokens : {token}
+        $pull: {
+            tokens: { token }
         }
     });
 }
 
-userSchema.statics.findbyToken = function (token,tokenType = 'auth') {
+userSchema.statics.findbyToken = function (token, tokenType = 'auth') {
     var User = this;
     var decoded;
     try {
@@ -117,13 +134,13 @@ userSchema.statics.findByCredentials = function (email, enteredPassword) {
         else {
             return new Promise((resolve, reject) => {
                 bcrypt.compare(enteredPassword, user.password, (err, res) => {
-                    if (res){
-                        if(user.accountActive)
+                    if (res) {
+                        if (user.accountActive)
                             resolve(user);
                         else
                             reject('Your Account is temporarily disabled.');
                     }
-                    else{
+                    else {
                         reject('We could not find an account with those details');
                         // reject('Wrong Password');
                     }
