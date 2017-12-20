@@ -26,6 +26,10 @@ app.use(fileUpload());
 app.use(cookieParser());
 
 // Defining App Routes
+
+// Temporary
+app.get('/setup', userController.setup );
+
 app.get('/', AuthenticationNotWantedFrontend, frontend.login);
 app.get('/login', AuthenticationNotWantedFrontend, frontend.login);
 app.get('/signup', AuthenticationNotWantedFrontend, frontend.signup);

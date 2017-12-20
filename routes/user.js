@@ -897,8 +897,8 @@ exports.checkOTP = (req, res) => {
                 if (doc) {
                     if (typeof doc.OTP != "undefined" && doc.OTP.length) {
                         var verifiedMobile = doc.OTP[0].mobile;
-                        
-                       
+
+
 
                         User.findByIdAndUpdate(req.user._id, {
                             $set: {
@@ -908,14 +908,14 @@ exports.checkOTP = (req, res) => {
                         }).then((doc) => {
                             // unset mob verified for prev. verified user (if any)
                             User.updateMany(
-                            { 
-                                $and: [
-                                        { '_id': { $ne: req.user._id } }, 
+                                {
+                                    $and: [
+                                        { '_id': { $ne: req.user._id } },
                                         { 'mobile': verifiedMobile },
-                                        {'mobileVerified' : true}
-                                    ] 
-                            },
-                            {
+                                        { 'mobileVerified': true }
+                                    ]
+                                },
+                                {
                                     $set: {
                                         mobileVerified: false
                                     }
@@ -966,4 +966,53 @@ exports.checkOTP = (req, res) => {
             errorDetails: 'OTP_1'
         });
     }
+}
+
+// ----------------------------------------
+// Setup - Adds a Default Super Admin User
+// ----------------------------------------
+// email : admin@gmail.com
+// password : 123456
+// -------------------------------------
+// Works only when no Super Admin Users
+//      are present in the database.
+// -------------------------------------
+exports.setup = (req, res) => {
+
+    User.findOne({ 'userType': 'admin', 'superAdmin': true }).then((doc) => {
+        if (doc) {
+            return res.status(400).send('SETUP Failed : There already exists a Super Admin User.');
+        }
+        else {
+            var newUser = new User({
+                name: 'Super Admin',
+                mobile: '9999999999',
+                aadharNumber: '000000000000',
+                mobileVerified : true,
+                email: 'admin@gmail.com',
+                userType : 'admin',
+                superAdmin : true,
+                password : '123456',
+                accountActive: 1
+            });
+
+            newUser.save()
+                .then(() => {
+                    return res.status(200).send('Setup Successful. Super admin user created. Use "admin@gmail.com" with "123456" as password for login ');
+                })
+                .catch((e) => {
+                    res.status(500).json({
+                        msg: 'An error occured while setting things up',
+                        err: e
+                    });
+                });
+
+        }
+    }).catch((e) => {
+        return res.status(500).json({
+            status: 0,
+            msg: 'Error occured while processing your request.',
+            err: e
+        })
+    });
 }
